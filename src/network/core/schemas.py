@@ -127,6 +127,11 @@ class FlowInfo(BaseModel):
     )
 
 
+class Snssai(BaseModel):
+    sst: int = Field(default=1)
+    sd: str = Field(default="FFFFFF")
+
+
 class AsSessionWithQoSSubscription(BaseModel):
     model_config = ConfigDict(serialize_by_alias=True)
     self_: Link | None = Field(None, alias="self")
@@ -147,12 +152,64 @@ class AsSessionWithQoSSubscription(BaseModel):
             lower the index of the array for a given entry, the higher the priority.",
         min_length=1,
     )
+    snssai: Snssai | None = None
+    dnn: str | None = None
     ueIpv4Addr: ipaddress.IPv4Address | None = None
     ueIpv6Addr: ipaddress.IPv6Address | None = None
     macAddr: MacAddress | None = None
     usageThreshold: UsageThreshold | None = None
     sponsorInfo: SponsorInformation | None = None
     qosMonInfo: QosMonitoringInformationModel | None = None
+
+
+class SourceTrafficFilters(BaseModel):
+    sourcePort: int
+
+
+class DestinationTrafficFilters(BaseModel):
+    destinationPort: int
+    destinationProtocol: str
+
+
+class TrafficRoute(BaseModel):
+    dnai: str
+
+
+class TrafficInfluSub(BaseModel):  # Replace with a meaningful name
+    afServiceId: str | None = None
+    afAppId: str
+    dnn: str | None = None
+    snssai: Snssai | None = None
+    trafficFilters: list[FlowInfo] | None = Field(
+        None,
+        description="Describe the data flow which requires Traffic Influence.",
+        min_length=1,
+    )
+    ipv4Addr: str | None = None
+    ipv6Addr: str | None = None
+
+    notificationDestination: str
+    trafficRoutes: list[TrafficRoute] | None = Field(
+        None,
+        description="Describe the list of DNAIs to reach the destination",
+        min_length=1,
+    )
+    suppFeat: str | None = None
+
+    def add_flow_descriptor(self, flow_desriptor: str):
+        self.trafficFilters = list()
+        self.trafficFilters.append(
+            FlowInfo(
+                flowId=len(self.trafficFilters) + 1, flowDescriptions=[flow_desriptor]
+            )
+        )
+
+    def add_traffic_route(self, dnai: str):
+        self.trafficRoutes = list()
+        self.trafficRoutes.append(TrafficRoute(dnai=dnai))
+
+    def add_snssai(self, sst: int, sd: str = None):
+        self.snssai = Snssai(sst=sst, sd=sd)
 
 
 ###############################################################
@@ -301,6 +358,11 @@ class SinkCredential(BaseModel):
     ]
 
 
+class NotificationSink(BaseModel):
+    sink: str | None
+    sinkCredential: SinkCredential | None
+
+
 class BaseSessionInfo(BaseModel):
     device: Device | None = None
     applicationServer: ApplicationServer
@@ -341,3 +403,30 @@ class CreateSession(BaseSessionInfo):
             ge=1,
         ),
     ]
+
+
+class CreateTrafficInfluence(BaseModel):
+    trafficInfluenceID: str | None = None
+    apiConsumerId: str | None = None
+    appId: str
+    appInstanceId: str
+    edgeCloudRegion: str | None = None
+    edgeCloudZoneId: str | None = None
+    sourceTrafficFilters: SourceTrafficFilters | None = None
+    destinationTrafficFilters: DestinationTrafficFilters | None = None
+    notificationUri: str | None = None
+    notificationAuthToken: str | None = None
+    device: Device
+    notificationSink: NotificationSink | None = None
+
+    def retrieve_ue_ipv4(self):
+        if self.device is not None and self.device.ipv4Address is not None:
+            return self.device.ipv4Address.root.privateAddress.root
+        else:
+            raise KeyError("device.ipv4Address.publicAddress")
+
+    def add_ue_ipv4(self, ipv4: str):
+        if self.device is None:
+            self.device = Device()
+        if self.device.ipv4Address is None:
+            self.device.ipv4Address = DeviceIpv4Addr(publicAddress=ipv4)

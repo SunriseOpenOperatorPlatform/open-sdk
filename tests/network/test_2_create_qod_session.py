@@ -5,6 +5,7 @@ from src.network.core.network_factory import NetworkClientFactory
 
 test_cases = [
     ("open5gs", "http://192.168.124.233:30769/", "scs"),
+    ("oai", "http://127.0.0.1:8080/", "scs-oai"),
 ]
 
 
@@ -25,7 +26,7 @@ def test_valid_input(client_name, base_url, scs_as_id):
         "qosProfile": "qos-e",
         "sink": "https://endpoint.example.com/sink",
     }
-    network_client._build_subscription(camara_session)
+    network_client._build_qod_subscription(camara_session)
 
 
 @pytest.mark.parametrize("client_name, base_url, scs_as_id", test_cases)

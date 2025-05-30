@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Common utilities (errors, HTTP helpers) used by the Open5GS client implementation (client.py).
+# Common utilities (errors, HTTP helpers) used by the core network interface (network_interface.py).
 
 import requests
 from pydantic import BaseModel
@@ -54,6 +54,36 @@ def as_session_with_qos_build_url(
     base_url: str, scs_as_id: str, session_id: str = None
 ):
     url = f"{base_url}/3gpp-as-session-with-qos/v1/{scs_as_id}/subscriptions"
+    if session_id is not None and len(session_id) > 0:
+        return f"{url}/{session_id}"
+    else:
+        return url
+
+
+# Traffic Influence Methods
+def traffic_influence_post(
+    base_url: str, scs_as_id: str, model_payload: BaseModel
+) -> dict:
+    data = model_payload.model_dump_json(exclude_none=True)
+    url = traffic_influence_build_url(base_url, scs_as_id)
+    return _make_request("POST", url, data=data)
+
+
+def traffic_influence_delete(base_url: str, scs_as_id: str, session_id: str):
+    url = traffic_influence_build_url(base_url, scs_as_id, session_id)
+    return _make_request("DELETE", url)
+
+
+def traffic_influence_put(
+    base_url: str, scs_as_id: str, session_id: str, model_payload: BaseModel
+) -> dict:
+    data = model_payload.model_dump_json(exclude_none=True)
+    url = traffic_influence_build_url(base_url, scs_as_id, session_id)
+    return _make_request("PUT", url, data=data)
+
+
+def traffic_influence_build_url(base_url: str, scs_as_id: str, session_id: str = None):
+    url = f"{base_url}/3gpp-traffic-influence/v1/{scs_as_id}/subscriptions"
     if session_id is not None and len(session_id) > 0:
         return f"{url}/{session_id}"
     else:
