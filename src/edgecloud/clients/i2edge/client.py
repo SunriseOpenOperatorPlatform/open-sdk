@@ -32,7 +32,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
-    ) -> list[dict]:
+    ) -> List[dict]:
         url = "{}/zones/list".format(self.base_url)
         params = {}
         try:
