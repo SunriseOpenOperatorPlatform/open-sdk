@@ -17,7 +17,7 @@ Also environment variables must be sset in advance, regarding access tokens
 import unittest
 from typing import Any, Dict
 
-from src.edgecloud.clients.aeros.client import EdgeApplicationManager
+from sunrise6g_opensdk.edgecloud.clients.aeros.client import EdgeApplicationManager
 
 TOSCA_YAML_EXAMPLE: str = """
 tosca_definitions_version: tosca_simple_yaml_1_3

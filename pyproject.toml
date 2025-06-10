@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sunrise6g-opensdk"
+version = "0.9.2"
+description = "Open source SDK to abstract CAMARA/GSMA Transformation Functions (TFs) for Edge Cloud platforms, 5G network cores and Open RAN."
+keywords = [
+  "Federation",
+  "Transformation Functions",
+  "TFs",
+  "CAMARA",
+  "GSMA OPG",
+  "Open source",
+  "OpenSDK",
+  "SDK",
+  "SUNRISE-6G",
+  "6G",
+  "ETSI",
+  "Edge Cloud Platform",
+  "5G Core",
+  "Open RAN",
+  "O-RAN",
+]
+authors = [
+  { name="Adrian Pino", email="adrian.pino@i2cat.net" }
+]
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "Apache-2.0" }
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "auto_mix_prep==0.2.0",
+  "colorlog==6.8.2",
+  "pydantic==2.11.3",
+  "requests==2.32.3",
+]
+
+[project.urls]
+Homepage = "https://sunrise6g.eu/"
+Repository = "https://github.com/OpenOperatorPlatform/OpenSDK"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["sunrise6g_opensdk*"]
+
+[tool.setuptools.package-data]
+sunrise6g_opensdk = ["py.typed"]
+
+[bdist_wheel]
+universal = 1

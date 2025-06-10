@@ -24,11 +24,15 @@ Key features:
 - Uses shared test constants and CAMARA-compliant manifests
 - Includes i2edge-specific tests where needed
 """
+import time
+
 import pytest
 
-from src.common.sdk import Sdk as sdkclient
-from src.edgecloud.clients.errors import EdgeCloudPlatformError
-from src.edgecloud.clients.i2edge.client import EdgeApplicationManager as I2EdgeClient
+from sunrise6g_opensdk.common.sdk import Sdk as sdkclient
+from sunrise6g_opensdk.edgecloud.clients.errors import EdgeCloudPlatformError
+from sunrise6g_opensdk.edgecloud.clients.i2edge.client import (
+    EdgeApplicationManager as I2EdgeClient,
+)
 from tests.edgecloud.test_cases import test_cases
 from tests.edgecloud.test_config import (
     APP_ID,
@@ -43,16 +47,16 @@ from tests.edgecloud.test_config import (
 )
 
 
-def id_func(val):
-    return val["edgecloud"]["client_name"]
-
-
 @pytest.fixture(scope="module", name="edgecloud_client")
 def instantiate_edgecloud_client(request):
     """Fixture to create and share an edgecloud client across tests"""
     client_specs = request.param
     clients = sdkclient.create_clients_from(client_specs)
     return clients.get("edgecloud")
+
+
+def id_func(val):
+    return val["edgecloud"]["client_name"]
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
@@ -91,7 +95,7 @@ def test_get_edge_cloud_zones_details(edgecloud_client, zone_id=ZONE_ID):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_create_artefact_success(edgecloud_client):
+def test_create_artefact(edgecloud_client):
     if isinstance(edgecloud_client, I2EdgeClient):
         try:
             edgecloud_client._create_artefact(
@@ -109,27 +113,37 @@ def test_create_artefact_success(edgecloud_client):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_onboard_app_success(edgecloud_client):
+def test_onboard_app(edgecloud_client):
     try:
         edgecloud_client.onboard_app(APP_ONBOARD_MANIFEST)
     except EdgeCloudPlatformError as e:
         pytest.fail(f"App onboarding failed unexpectedly: {e}")
 
 
-@pytest.fixture(scope="module", name="app_instance_id")
-def test_deploy_app(edgecloud_client):
+@pytest.fixture(scope="module")
+def app_instance_id(edgecloud_client):
     try:
         output = edgecloud_client.deploy_app(APP_ID, APP_ZONES)
         deployed_app = {"appInstanceId": output["deploy_name"]}
         assert "appInstanceId" in deployed_app
         assert deployed_app["appInstanceId"] is not None
-        return deployed_app["appInstanceId"]
-    except EdgeCloudPlatformError as e:
-        pytest.fail(f"App deployment failed unexpectedly: {e}")
+        yield deployed_app["appInstanceId"]
+    finally:
+        pass
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_undeploy_app_success(edgecloud_client, app_instance_id):
+def test_deploy_app(app_instance_id):
+    assert app_instance_id is not None
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_timer_wait_30_seconds(edgecloud_client):
+    time.sleep(30)
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_undeploy_app(edgecloud_client, app_instance_id):
     try:
         edgecloud_client.undeploy_app(app_instance_id)
     except EdgeCloudPlatformError as e:
@@ -137,7 +151,7 @@ def test_undeploy_app_success(edgecloud_client, app_instance_id):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_delete_onboarded_app_success(edgecloud_client):
+def test_delete_onboarded_app(edgecloud_client):
     try:
         edgecloud_client.delete_onboarded_app(app_id=APP_ONBOARD_MANIFEST["appId"])
     except EdgeCloudPlatformError as e:
@@ -145,7 +159,7 @@ def test_delete_onboarded_app_success(edgecloud_client):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_delete_artefact_success(edgecloud_client):
+def test_delete_artefact(edgecloud_client):
     if isinstance(edgecloud_client, I2EdgeClient):
         try:
             edgecloud_client._delete_artefact(artefact_id=ARTEFACT_ID)

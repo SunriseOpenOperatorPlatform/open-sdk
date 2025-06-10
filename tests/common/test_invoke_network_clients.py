@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from src.common.sdk import Sdk as sdkclient
+from sunrise6g_opensdk.common.sdk import Sdk as sdkclient
 
 NETWORK_TEST_CASES = [
     {

@@ -1,7 +1,7 @@
 # # -*- coding: utf-8 -*-
 import pytest
 
-from src.network.core.network_factory import NetworkClientFactory
+from sunrise6g_opensdk.network.core.network_factory import NetworkClientFactory
 
 test_cases = [("oai", "http://127.0.0.1/", "scs-oai")]
 

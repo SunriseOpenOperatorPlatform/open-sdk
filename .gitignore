@@ -3,6 +3,8 @@
 .pytest_cache
 .pyc
 __pycache__/
-tmp/
 .vscode/
 .log
+.tar.gz
+/dist
+src/sunrise6g_opensdk.egg-info/

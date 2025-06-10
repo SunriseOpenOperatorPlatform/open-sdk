@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from src.common.sdk_catalog_client import SdkCatalogClient
-from src.network.clients.open5gs.client import NetworkManager
+from sunrise6g_opensdk.common.sdk_catalog_client import SdkCatalogClient
+from sunrise6g_opensdk.network.clients.open5gs.client import NetworkManager
 
 OPEN5GS_TEST_CASES = [
     {
