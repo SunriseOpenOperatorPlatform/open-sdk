@@ -6,10 +6,7 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from src.edgecloud.clients.piedge.lib.models.base_model_ import Model
-from src.edgecloud.clients.piedge.lib.models.autoscaling_policy import AutoscalingPolicy  # noqa: F401,E501
-from src.edgecloud.clients.piedge.lib.models.env_parameter_name import EnvParameterName  # noqa: F401,E501
 from src.edgecloud.clients.piedge.lib.models.env_parameters import EnvParameters
-from src.edgecloud.clients.piedge.lib.models.volume import Volume  # noqa: F401,E501
 from src.edgecloud.clients.piedge.lib.util import deserialize_model
 
 
@@ -18,7 +15,7 @@ class ServiceFunctionRegistrationRequest(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, service_function_name: str=None, service_function_image: str=None, service_function_type: str=None, application_ports: List[int]=None, autoscaling_policies: List[AutoscalingPolicy]=None, required_volumes: List[Volume]=None, required_env_parameters: List[EnvParameters]=None, privileged: bool=None):  # noqa: E501
+    def __init__(self, service_function_name: str=None, service_function_image: str=None, service_function_type: str=None, application_ports: List[int]=None):  # noqa: E501
         """ServiceFunctionRegistrationRequest - a model defined in Swagger
 
         :param service_function_name: The service_function_name of this ServiceFunctionRegistrationRequest.  # noqa: E501
@@ -43,10 +40,6 @@ class ServiceFunctionRegistrationRequest(Model):
             'service_function_image': str,
             'service_function_type': str,
             'application_ports': List[int],
-            'autoscaling_policies': List[AutoscalingPolicy],
-            'required_volumes': List[Volume],
-            'required_env_parameters': List[EnvParameters],
-            'privileged': bool
         }
 
         self.attribute_map = {
@@ -54,19 +47,13 @@ class ServiceFunctionRegistrationRequest(Model):
             'service_function_image': 'service_function_image',
             'service_function_type': 'service_function_type',
             'application_ports': 'application_ports',
-            'autoscaling_policies': 'autoscaling_policies',
-            'required_volumes': 'required_volumes',
-            'required_env_parameters': 'required_env_parameters',
-            'privileged': 'privileged'
+
         }
         self._service_function_name = service_function_name
         self._service_function_image = service_function_image
         self._service_function_type = service_function_type
         self._application_ports = application_ports
-        self._autoscaling_policies = autoscaling_policies
-        self._required_volumes = required_volumes
-        self._required_env_parameters = required_env_parameters
-        self._privileged = privileged
+
 
     @classmethod
     def from_dict(cls, dikt) -> 'ServiceFunctionRegistrationRequest':
@@ -162,87 +149,3 @@ class ServiceFunctionRegistrationRequest(Model):
         """
 
         self._application_ports = application_ports
-
-    @property
-    def autoscaling_policies(self) -> List[AutoscalingPolicy]:
-        """Gets the autoscaling_policies of this ServiceFunctionRegistrationRequest.
-
-
-        :return: The autoscaling_policies of this ServiceFunctionRegistrationRequest.
-        :rtype: List[AutoscalingPolicy]
-        """
-        return self._autoscaling_policies
-
-    @autoscaling_policies.setter
-    def autoscaling_policies(self, autoscaling_policies: List[AutoscalingPolicy]):
-        """Sets the autoscaling_policies of this ServiceFunctionRegistrationRequest.
-
-
-        :param autoscaling_policies: The autoscaling_policies of this ServiceFunctionRegistrationRequest.
-        :type autoscaling_policies: List[AutoscalingPolicy]
-        """
-
-        self._autoscaling_policies = autoscaling_policies
-
-    @property
-    def required_volumes(self) -> List[Volume]:
-        """Gets the required_volumes of this ServiceFunctionRegistrationRequest.
-
-
-        :return: The required_volumes of this ServiceFunctionRegistrationRequest.
-        :rtype: List[Volume]
-        """
-        return self._required_volumes
-
-    @required_volumes.setter
-    def required_volumes(self, required_volumes: List[Volume]):
-        """Sets the required_volumes of this ServiceFunctionRegistrationRequest.
-
-
-        :param required_volumes: The required_volumes of this ServiceFunctionRegistrationRequest.
-        :type required_volumes: List[Volume]
-        """
-
-        self._required_volumes = required_volumes
-
-    @property
-    def required_env_parameters(self) -> List[EnvParameters]:
-        """Gets the required_env_parameters of this ServiceFunctionRegistrationRequest.
-
-
-        :return: The required_env_parameters of this ServiceFunctionRegistrationRequest.
-        :rtype: List[EnvParameterName]
-        """
-        return self._required_env_parameters
-
-    @required_env_parameters.setter
-    def required_env_parameters(self, required_env_parameters: List[EnvParameters]):
-        """Sets the required_env_parameters of this ServiceFunctionRegistrationRequest.
-
-
-        :param required_env_parameters: The required_env_parameters of this ServiceFunctionRegistrationRequest.
-        :type required_env_parameters: List[EnvParameterName]
-        """
-
-        self._required_env_parameters = required_env_parameters
-
-    @property
-    def privileged(self) -> bool:
-        """Gets the privileged of this ServiceFunctionRegistrationRequest.
-
-
-        :return: The privileged of this ServiceFunctionRegistrationRequest.
-        :rtype: bool
-        """
-        return self._privileged
-
-    @privileged.setter
-    def privileged(self, privileged: bool):
-        """Sets the privileged of this ServiceFunctionRegistrationRequest.
-
-
-        :param privileged: The privileged of this ServiceFunctionRegistrationRequest.
-        :type privileged: bool
-        """
-
-        self._privileged = privileged

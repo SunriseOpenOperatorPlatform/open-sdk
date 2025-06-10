@@ -10,7 +10,9 @@ import os
 from src.edgecloud.clients.piedge.lib.models.deploy_service_function import DeployServiceFunction  # noqa: E501
 # from src.edgecloud.clients.piedge.lib.core import paas_handler
 #from src.edgecloud.clients.piedge.lib.utils import connector_db
-from src.edgecloud.clients.piedge.lib.utils import kubernetes_connector, connector_db, auxiliary_functions
+from src.edgecloud.clients.piedge.lib.utils import auxiliary_functions
+from src.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
+from src.edgecloud.clients.piedge.lib.utils.kubernetes_connector import KubernetesConnector
 
 driver=None
 
@@ -27,7 +29,7 @@ def deploy_chain(chain_input):
     return "Chain deployed successfully"
 
 
-def deploy_service_function(service_function: DeployServiceFunction, paas_name=None):  # noqa: E501
+def deploy_service_function(service_function: DeployServiceFunction, connector_db: ConnectorDB, kubernetes_connector: KubernetesConnector, paas_name=None):  # noqa: E501
 
     # descriptor_paas_input["scaling_type"]="minimize_cost"
     # print(descriptor_paas_input)
@@ -206,21 +208,6 @@ def deploy_service_function(service_function: DeployServiceFunction, paas_name=N
                 final_deploy_descriptor["env_parameters"] = paremeters
 
 
-    #check autoscaling policies
-    if "autoscaling_policies" in ser_function_[0]:
-        if ser_function_[0].get("autoscaling_policies") is not None:
-            if service_function.autoscaling_metric is not None:
-                for scaling_method in ser_function_[0]["autoscaling_policies"]:
-                    if service_function.autoscaling_policy is not None:
-                        if scaling_method["policy"] == service_function.autoscaling_policy:
-                            for metric in scaling_method["monitoring_metrics"]:
-
-                                if metric["metric"] == service_function.autoscaling_metric:
-                                    scaling_metric_ = []
-                                    scaling_metric_.append(metric)
-                                    final_deploy_descriptor["autoscaling_policies"] = scaling_metric_
-                                    break
-
     ##################START##################### TODO!!!!!!!!!!!!!!!!!!!!1
 
     # #Get deployed apps to check if app exist (if yes use patch methods)
@@ -257,13 +244,6 @@ def deploy_service_function(service_function: DeployServiceFunction, paas_name=N
                     deployed_service_function_db["volumes"] = final_deploy_descriptor["volumes"]
             if "env_parameters" in final_deploy_descriptor:
                     deployed_service_function_db["env_parameters"] = final_deploy_descriptor["env_parameters"]
-
-            if service_function.monitoring_services:
-                monitor_url = nodes_monitoring.create_monitoring_for_service_function(service_function)
-                deployed_service_function_db["monitoring_service_URL"] = monitor_url
-
-            if "paas_name" in final_deploy_descriptor:
-                deployed_service_function_db["paas_name"] = final_deploy_descriptor["paas_name"]
 
             if "Conflict" not in response:
 
