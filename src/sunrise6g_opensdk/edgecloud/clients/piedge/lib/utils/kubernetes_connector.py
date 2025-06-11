@@ -5,7 +5,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import auxiliary_functions
 from pprint import pprint
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import connector_db
+from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
 configuration = client.Configuration()
 import requests
 import paramiko
@@ -157,7 +157,7 @@ class KubernetesConnector():
         return pop_output
     
 
-    def delete_service_function(self, service_function_name):
+    def delete_service_function(self, connector_db: ConnectorDB, service_function_name):
 
         deleted_app = self.api_instance_appsv1.delete_namespaced_deployment(name=service_function_name, namespace="sunrise6g")
 
@@ -398,7 +398,7 @@ class KubernetesConnector():
         return body
     
 
-    def get_deployed_service_functions(self):
+    def get_deployed_service_functions(self, connector_db: ConnectorDB):
         label_selector={}
         # deployed_hpas=get_deployed_hpas()
     #

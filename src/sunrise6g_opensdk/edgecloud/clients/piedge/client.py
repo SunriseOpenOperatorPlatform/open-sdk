@@ -21,8 +21,8 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         kubernetes_port = kwargs['KUBERNETES_MASTER_PORT']
         storage_uri = kwargs['EMP_STORAGE_URI']
         username = kwargs['KUBERNETES_USERNAME']
-        # self.k8s_connector = KubernetesConnector(ip=self.kubernetes_host, port=kubernetes_port, token=kubernetes_token, username=username)
-        # self.connector_db = ConnectorDB(storage_uri)
+        self.k8s_connector = KubernetesConnector(ip=self.kubernetes_host, port=kubernetes_port, token=kubernetes_token, username=username)
+        self.connector_db = ConnectorDB(storage_uri)
         
 
     def onboard_app(self, app_manifest: AppManifest) -> Dict:
@@ -80,7 +80,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def get_all_deployed_apps(self, app_id: Optional[str] = None, app_instance_id: Optional[str] = None, region: Optional[str] = None) -> List[Dict]:
         logging.info('Retreiving all deployed apps in the edge cloud platform')
-        deployments = self.k8s_connector.get_deployed_service_functions()
+        deployments = self.k8s_connector.get_deployed_service_functions(self.connector_db)
         response = []
         for deployment in deployments:
             item = {}
@@ -100,7 +100,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         response = 'App instance with ID ['+app_instance_id+'] not found'
         for service_fun in sfs:
             if service_fun["uid"]==app_instance_id:
-                self.k8s_connector.delete_service_function(service_fun['service_function_instance_name'])
+                self.k8s_connector.delete_service_function(self.connector_db, service_fun['service_function_instance_name'])
                 response = 'App instance with ID ['+app_instance_id+'] successfully removed'
                 break
         return response
