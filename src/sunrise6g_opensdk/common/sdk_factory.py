@@ -40,28 +40,28 @@ def _edgecloud_factory(client_name: str, base_url: str, **kwargs):
         )
 
 
-# def _network_factory(client_name: str, base_url: str, **kwargs):
-#     if "scs_as_id" not in kwargs:
-#         raise ValueError("Missing required 'scs_as_id' for network clients.")
-#     scs_as_id = kwargs.pop("scs_as_id")
+def _network_factory(client_name: str, base_url: str, **kwargs):
+    if "scs_as_id" not in kwargs:
+        raise ValueError("Missing required 'scs_as_id' for network clients.")
+    scs_as_id = kwargs.pop("scs_as_id")
 
-#     network_factory = {
-#         "open5gs": lambda url, scs_id, **kw: Open5GSClient(
-#             base_url=url, scs_as_id=scs_id, **kw
-#         ),
-#         "oai": lambda url, scs_id, **kw: OaiCoreClient(
-#             base_url=url, scs_as_id=scs_id, **kw
-#         ),
-#         "open5gcore": lambda url, scs_id, **kw: Open5GCoreClient(
-#             base_url=url, scs_as_id=scs_id, **kw
-#         ),
-#     }
-#     try:
-#         return network_factory[client_name](base_url, scs_as_id, **kwargs)
-#     except KeyError:
-#         raise ValueError(
-#             f"Invalid network client '{client_name}'. Available: {list(network_factory)}"
-#         )
+    network_factory = {
+        "open5gs": lambda url, scs_id, **kw: Open5GSClient(
+            base_url=url, scs_as_id=scs_id, **kw
+        ),
+        "oai": lambda url, scs_id, **kw: OaiCoreClient(
+            base_url=url, scs_as_id=scs_id, **kw
+        ),
+        "open5gcore": lambda url, scs_id, **kw: Open5GCoreClient(
+            base_url=url, scs_as_id=scs_id, **kw
+        ),
+    }
+    try:
+        return network_factory[client_name](base_url, scs_as_id, **kwargs)
+    except KeyError:
+        raise ValueError(
+            f"Invalid network client '{client_name}'. Available: {list(network_factory)}"
+        )
 
 
 # def _oran_factory(client_name: str, base_url: str):
@@ -70,8 +70,8 @@ def _edgecloud_factory(client_name: str, base_url: str, **kwargs):
 
 class SdkFactory:
     _domain_factories = {
-        "edgecloud": _edgecloud_factory
-        # "network": _network_factory,
+        "edgecloud": _edgecloud_factory,
+        "network": _network_factory,
         # "oran": _oran_factory,
     }
 

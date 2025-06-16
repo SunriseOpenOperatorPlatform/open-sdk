@@ -5,9 +5,9 @@ from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.env_parameters import EnvParameters
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.util import deserialize_model
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.env_parameters import EnvParameters
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.util import deserialize_model
 
 
 class ServiceFunctionRegistrationRequest(Model):

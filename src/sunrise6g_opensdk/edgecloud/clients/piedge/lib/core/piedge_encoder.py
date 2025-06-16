@@ -6,10 +6,10 @@ import json
 import sys
 import os
 
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.deploy_service_function import DeployServiceFunction  # noqa: E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import auxiliary_functions
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.kubernetes_connector import KubernetesConnector
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.deploy_service_function import DeployServiceFunction  # noqa: E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import auxiliary_functions
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.kubernetes_connector import KubernetesConnector
 
 driver=None
 

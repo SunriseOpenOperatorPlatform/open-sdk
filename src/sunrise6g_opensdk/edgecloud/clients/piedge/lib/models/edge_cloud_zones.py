@@ -5,9 +5,9 @@ from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.edge_cloud_zone import EdgeCloudZone  # noqa: F401,E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib import util
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.edge_cloud_zone import EdgeCloudZone  # noqa: F401,E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib import util
 
 
 class EdgeCloudZones(Model):

@@ -2,7 +2,7 @@ import datetime
 
 import six
 import typing
-from src.edgecloud.clients.piedge.lib import type_util
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib import type_util
 
 
 def _deserialize(data, klass):

@@ -5,13 +5,13 @@ from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.app_manifest_app_repo import AppManifestAppRepo  # noqa: F401,E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.app_manifest_component_spec import AppManifestComponentSpec  # noqa: F401,E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.operating_system import OperatingSystem  # noqa: F401,E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.required_resources import RequiredResources  # noqa: F401,E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.base_model_ import Model
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.app_manifest_app_repo import AppManifestAppRepo  # noqa: F401,E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.app_manifest_component_spec import AppManifestComponentSpec  # noqa: F401,E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.operating_system import OperatingSystem  # noqa: F401,E501
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.models.required_resources import RequiredResources  # noqa: F401,E501
 import re  # noqa: F401,E501
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.util import deserialize_model
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.util import deserialize_model
 
 
 class AppManifest(Model):

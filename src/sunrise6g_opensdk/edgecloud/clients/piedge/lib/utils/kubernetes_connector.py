@@ -3,9 +3,9 @@ import os
 import time
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import auxiliary_functions
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils import auxiliary_functions
 from pprint import pprint
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
 configuration = client.Configuration()
 import requests
 import paramiko

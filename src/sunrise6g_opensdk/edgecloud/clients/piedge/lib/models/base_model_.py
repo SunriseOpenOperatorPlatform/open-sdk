@@ -3,7 +3,7 @@ import pprint
 import six
 import typing
 
-from src.sunrise6g_opensdk.edgecloud.clients.piedge.lib import util
+from sunrise6g_opensdk.edgecloud.clients.piedge.lib import util
 
 T = typing.TypeVar('T')
 
