@@ -8,7 +8,7 @@ from pprint import pprint
 from sunrise6g_opensdk.edgecloud.clients.piedge.lib.utils.connector_db import ConnectorDB
 configuration = client.Configuration()
 import requests
-import paramiko
+# import paramiko
 from requests.structures import CaseInsensitiveDict
 # import traceback
 import logging
