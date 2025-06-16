@@ -1,6 +1,6 @@
 import logging
 import traceback
-import connexion
+# import connexion
 import six
 import json
 import sys
