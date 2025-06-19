@@ -14,6 +14,9 @@ from sunrise6g_opensdk.edgecloud.clients.aeros.client import (
 from sunrise6g_opensdk.edgecloud.clients.i2edge.client import (
     EdgeApplicationManager as I2EdgeClient,
 )
+from sunrise6g_opensdk.edgecloud.clients.piedge.client import (
+    EdgeApplicationManager as PiEdgeClient,
+)
 from sunrise6g_opensdk.network.clients.oai.client import NetworkManager as OaiCoreClient
 from sunrise6g_opensdk.network.clients.open5gcore.client import (
     NetworkManager as Open5GCoreClient,
@@ -22,14 +25,14 @@ from sunrise6g_opensdk.network.clients.open5gs.client import (
     NetworkManager as Open5GSClient,
 )
 
-# from sunrise6g_opensdk.edgecloud.clients.piedge.client import EdgeApplicationManager as PiEdgeClient
+#
 
 
 def _edgecloud_factory(client_name: str, base_url: str, **kwargs):
     edge_cloud_factory = {
         "aeros": lambda url, **kw: AerosClient(base_url=url, **kw),
         "i2edge": lambda url: I2EdgeClient(base_url=url),
-        # "piedge": lambda url: PiEdgeClient(base_url=url), Uncomment when import issues are solved
+        "piedge": lambda url: PiEdgeClient(base_url=url),
     }
     try:
         return edge_cloud_factory[client_name](base_url, **kwargs)

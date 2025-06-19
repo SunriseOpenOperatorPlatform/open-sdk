@@ -18,13 +18,15 @@ NETWORK_TEST_CASES = [
             "scs_as_id": "scs2",
         }
     },
-    {
-        "network": {
-            "client_name": "open5gcore",
-            "base_url": "http://test-open5gcore.url",
-            "scs_as_id": "scs3",
-        }
-    },
+    # TODO: Once the functionality from QoD, Location-retrieval and
+    # traffic influnce is validated, tests can be carried out for Open5GCore
+    # {
+    #     "network": {
+    #         "client_name": "open5gcore",
+    #         "base_url": "http://test-open5gcore.url",
+    #         "scs_as_id": "scs3",
+    #     }
+    # },
 ]
 
 

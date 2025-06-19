@@ -20,13 +20,18 @@ EDGE_CLOUD_TEST_CASES = [
             "aerOS_HLO_TOKEN": "fake-hlo",
         }
     },
-    # Uncomment once piedge import issues are fixed
-    # {
-    #     "edgecloud": {
-    #         "client_name": "piedge",
-    #         "base_url": "http://test-piedge.url"
-    #     }
-    # }
+    {
+        "edgecloud": {
+            "client_name": "piedge",
+            "base_url": "",
+            # Additional parameters for K8s client:
+            "PLATFORM_PROVIDER": "ICOM",
+            "KUBERNETES_MASTER_TOKEN": "12345",
+            "KUBERNETES_MASTER_PORT": "16443",
+            "KUBERNETES_USERNAME": "user",
+            # 'EMP_STORAGE_URI': 'http://test.com'
+        }
+    },
 ]
 
 

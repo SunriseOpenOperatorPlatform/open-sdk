@@ -187,27 +187,6 @@ class NetworkManagementInterface(ABC):
         self.add_core_specific_ti_parameters(traffic_influence_data, subscription)
         return subscription
 
-    def _build_camara_ti(self, trafficInflSub: Dict):
-        traffic_influence_data = schemas.TrafficInfluSub.model_validate(trafficInflSub)
-
-        flowDesc = traffic_influence_data.trafficFilters[0].flowDescriptions[0]
-        serverIp = flowDesc.split("to ")[1].split("/32")[0]
-        edgeId = traffic_influence_data.trafficRoutes[0].dnai
-
-        camara_ti = schemas.CreateTrafficInfluence(
-            appId=traffic_influence_data.afAppId,
-            appInstanceId=serverIp,
-            edgeCloudZoneId=edgeId,
-            notificationUri=traffic_influence_data.notificationDestination,
-            device=schemas.Device(
-                ipv4Address=schemas.DeviceIpv4Addr1(
-                    publicAddress=traffic_influence_data.ipv4Addr,
-                    privateAddress=traffic_influence_data.ipv4Addr,
-                )
-            ),
-        )
-        return camara_ti
-
     def create_qod_session(self, session_info: Dict) -> Dict:
         """
         Creates a QoS session based on CAMARA QoD API input.
@@ -327,17 +306,6 @@ class NetworkManagementInterface(ABC):
         """
         common.traffic_influence_delete(self.base_url, self.scs_as_id, resource_id)
         return
-
-    def get_individual_traffic_influence_resource(self, resource_id: str) -> Dict:
-        nef_response = common.traffic_influence_get(
-            self.base_url, self.scs_as_id, resource_id
-        )
-        camara_ti = self._build_camara_ti(nef_response)
-        return camara_ti
-
-    def get_all_traffic_influence_resource(self) -> list[Dict]:
-        r = common.traffic_influence_get(self.base_url, self.scs_as_id)
-        return [self._build_camara_ti(item) for item in r]
 
     # Placeholder for other CAMARA APIs (e.g., Traffic Influence,
     # Location-retrieval, etc.)

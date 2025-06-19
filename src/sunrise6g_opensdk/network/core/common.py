@@ -82,18 +82,6 @@ def traffic_influence_put(
     return _make_request("PUT", url, data=data)
 
 
-def traffic_influence_get(base_url: str, scs_as_id: str, sessionId: str = None) -> dict:
-    url = traffic_influence_build_url(base_url, scs_as_id, sessionId)
-    return _make_request("GET", url)
-
-
-def traffic_influence_get_all(
-    base_url: str, scs_as_id: str, sessionId: str = None
-) -> list[dict]:
-    url = traffic_influence_build_url(base_url, scs_as_id)
-    return _make_request("GET", url)
-
-
 def traffic_influence_build_url(base_url: str, scs_as_id: str, session_id: str = None):
     url = f"{base_url}/3gpp-traffic-influence/v1/{scs_as_id}/subscriptions"
     if session_id is not None and len(session_id) > 0:
