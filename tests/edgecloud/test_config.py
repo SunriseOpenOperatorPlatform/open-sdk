@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-EdgeCloud Platform Test Configuration
-
-This file contains the configuration constants and manifests for testing
-the EdgeCloud Platform integration across different adapters.
-"""
-
 CONFIG = {
     "i2edge": {
         "ZONE_ID": "Omega",
@@ -128,5 +120,42 @@ CONFIG = {
                 },
             }
         ],
+    },
+    "kubernetes": {
+        "K8S_ONBOARDED_APP_NAME": "nginx",
+        "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "K8S_DEPLOY_PAYLOAD": {
+            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "name": "nginx-test",
+            "edgeCloudZoneId": "zorro-solutions",
+            "kubernetesClusterRef": "",
+        },
+        "APP_ONBOARD_MANIFEST": {
+            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "name": "nginx",
+            "version": "1",
+            "packageType": "QCOW2",
+            "appProvider": "Nginx Inc.",
+            "appRepo": {"imagePath": "nginx", "type": "PRIVATEREPO"},
+            "componentSpec": [
+                {
+                    "componentName": "nginx",
+                    "networkInterfaces": [
+                        {
+                            "protocol": "TCP",
+                            "port": 80,
+                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "visibilityType": "VISIBILITY_EXTERNAL",
+                        },
+                        {
+                            "protocol": "TCP",
+                            "port": 443,
+                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "visibilityType": "VISIBILITY_EXTERNAL",
+                        },
+                    ],
+                }
+            ],
+        },
     },
 }

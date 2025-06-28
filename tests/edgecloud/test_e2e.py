@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 ##
-# Copyright 2025-present by Software Networks Area, i2CAT.
-# All rights reserved.
-#
 # This file is part of the Open SDK
 #
 # Contributors:
@@ -57,9 +54,18 @@ def test_get_edge_cloud_zones(edgecloud_client):
     try:
         zones = edgecloud_client.get_edge_cloud_zones()
         assert isinstance(zones, list)
-        for zone in zones:
-            assert "zoneId" in zone
-            assert "geographyDetails" in zone
+        # TODO: Harmonise zone schema to match CAMARA schemas across all clients
+        if edgecloud_client.client_name == "i2edge":
+            for zone in zones:
+                assert "zoneId" in zone
+                assert "geographyDetails" in zone
+        else:
+            for zone in zones:
+                assert "edgeCloudZoneId" in zone
+                assert "edgeCloudZoneName" in zone
+                assert "edgeCloudZoneStatus" in zone
+                assert "edgeCloudProvider" in zone
+                assert "edgeCloudRegion" in zone
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to retrieve zones: {e}")
 

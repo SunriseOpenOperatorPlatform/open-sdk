@@ -43,7 +43,7 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: isort check
-      run: isort src tests --check --profile black --filter-files
+      run: isort src tests --check --profile black
 
     - name: black check
       run: black src tests --check

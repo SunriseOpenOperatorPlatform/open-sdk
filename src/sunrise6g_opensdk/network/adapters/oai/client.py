@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ##
-# Copyright (c) 2025 Netsoft Group, EURECOM.
-# All rights reserved.
 #
 # This file is part of the Open SDK
 #
