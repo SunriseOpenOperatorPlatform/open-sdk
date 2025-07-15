@@ -45,7 +45,7 @@ def i2edge_post(url: str, model_payload: BaseModel) -> dict:
     try:
         response = requests.post(url, data=json_payload, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return response
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to deploy app: {}. Detail: {}".format(i2edge_err_msg, e)
@@ -62,7 +62,7 @@ def i2edge_post_multiform_data(url: str, model_payload: BaseModel) -> dict:
     try:
         response = requests.post(url, data=payload_in_str, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return response
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to deploy app: {}. Detail: {}".format(i2edge_err_msg, e)
@@ -76,7 +76,7 @@ def i2edge_delete(url: str, id: str) -> dict:
         query = "{}/{}".format(url, id)
         response = requests.delete(query, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return response
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to undeploy app: {}. Detail: {}".format(i2edge_err_msg, e)
@@ -89,7 +89,7 @@ def i2edge_get(url: str, params: Optional[dict]):
     try:
         response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return response
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to get apps: {}. Detail: {}".format(i2edge_err_msg, e)
