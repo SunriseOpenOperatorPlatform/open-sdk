@@ -248,6 +248,17 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     # GSMA FM
 
+    # FederationManagement
+
+    def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> Dict:
+        url = "{}/zones".format(self.base_url)
+        params = {}
+        try:
+            response = i2edge_get(url, params=params)
+            return response
+        except I2EdgeError as e:
+            raise e
+
     # AvailabilityZoneInfoSynchronization
 
     def get_edge_cloud_zone_details_gsma(
@@ -257,7 +268,6 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         params = {}
         try:
             response = i2edge_get(url, params=params)
-            log.info("Zone metadata retrieved successfully")
             return response
         except I2EdgeError as e:
             raise e
@@ -335,6 +345,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
 
+    def patch_onboarded_app_gsma(
+        self, federation_context_id: str, app_id: str, request_body: dict
+    ) -> Dict:
+        pass
+
     def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str):
         try:
             response = self.delete_onboarded_app(app_id)
@@ -359,7 +374,6 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             payload = schemas.AppDeploy(
                 app_deploy_data=app_deploy_data, app_parameters={"namespace": "test"}
             )
-            print(payload)
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_post(url, payload)
             return response
@@ -377,10 +391,25 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             url = "{}/application_instance/{}/{}".format(
                 self.base_url, zone_id, app_instance_id
             )
-            response = i2edge_get(url)
+            params = {}
+            response = i2edge_get(url, params=params)
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appId or zoneId in GSMA payload: {e}")
+
+    def get_all_deployed_apps_gsma(
+        self,
+        federation_context_id: str,
+        app_id: str,
+        app_provider: str,
+    ):
+        try:
+            url = "{}/application_instances".format(self.base_url)
+            params = {}
+            response = i2edge_get(url, params=params)
+            return response
+        except KeyError as e:
+            raise I2EdgeError(f"Error retrieving apps: {e}")
 
     def undeploy_app_gsma(
         self,

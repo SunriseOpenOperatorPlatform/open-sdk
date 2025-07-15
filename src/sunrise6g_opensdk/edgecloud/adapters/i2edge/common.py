@@ -53,6 +53,23 @@ def i2edge_post(url: str, model_payload: BaseModel) -> dict:
         raise I2EdgeError(err_msg)
 
 
+def i2edge_put(url: str, model_payload: BaseModel) -> dict:
+    headers = {
+        "Content-Type": "application/json",
+        "accept": "application/json",
+    }
+    json_payload = json.dumps(model_payload.model_dump(mode="json"))
+    try:
+        response = requests.put(url, data=json_payload, headers=headers)
+        response.raise_for_status()
+        return response
+    except requests.exceptions.HTTPError as e:
+        i2edge_err_msg = get_error_message_from(response)
+        err_msg = "Failed to patch: {}. Detail: {}".format(i2edge_err_msg, e)
+        log.error(err_msg)
+        raise I2EdgeError(err_msg)
+
+
 def i2edge_post_multiform_data(url: str, model_payload: BaseModel) -> dict:
     headers = {
         "accept": "application/json",
