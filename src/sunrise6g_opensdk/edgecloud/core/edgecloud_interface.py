@@ -5,6 +5,7 @@
 #
 # Contributors:
 #   - Adrián Pino Martínez (adrian.pino@i2cat.net)
+#   - César Cajas (cesar.cajas@i2cat.net)
 ##
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional

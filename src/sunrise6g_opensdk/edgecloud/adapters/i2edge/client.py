@@ -5,7 +5,9 @@
 # Contributors:
 #   - Adrián Pino Martínez (adrian.pino@i2cat.net)
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
+#   - César Cajas (cesar.cajas@i2cat.net)
 ##
+import json
 from copy import deepcopy
 from typing import Dict, List, Optional
 
@@ -36,6 +38,8 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def __init__(self, base_url: str, flavour_id: str):
         self.base_url = base_url
         self.flavour_id = flavour_id
+        self.content_type_gsma = "application/json"
+        self.encoding_gsma = "utf-8"
 
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
@@ -294,15 +298,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             }
 
             response = self._create_artefact(**transformed)
-            # if response.status_code == 201:
-            #     gsma_format_response = Response()
-            #     gsma_format_response.status_code = 200
-            #     gsma_format_response._content = b'{"response": "Artefact uploaded successfully"}'
-            #     gsma_format_response.headers["Content-Type"] = "application/json"
-            #     gsma_format_response.encoding = "utf-8"
-            #     gsma_format_response.url = response.url
-            #     gsma_format_response.request = response.request
-            #     return gsma_format_response
+            if response.status_code == 201:
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content={"response": "Artefact uploaded successfully"},
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA artefact payload: {e}")
@@ -310,6 +314,35 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def get_artefact_gsma(self, federation_context_id: str, artefact_id: str) -> Dict:
         try:
             response = self._get_artefact(artefact_id)
+            if response.status_code == 200:
+                response_json = response.json()
+                print(response_json)
+                content = {
+                    "artefactId": response_json.get("artefact_id"),
+                    "appProviderId": "Ihs0gCqO65SHTz",
+                    "artefactName": response_json.get("name"),
+                    "artefactDescription": "string",
+                    "artefactVersionInfo": response_json.get("version"),
+                    "artefactVirtType": "VM_TYPE",
+                    "artefactFileName": "stringst",
+                    "artefactFileFormat": "ZIP",
+                    "artefactDescriptorType": "HELM",
+                    "repoType": response_json.get("repo_type"),
+                    "artefactRepoLocation": {
+                        "repoURL": response_json.get("repo_url"),
+                        "userName": response_json.get("repo_user_name"),
+                        "password": response_json.get("repo_password"),
+                        "token": response_json.get("repo_token"),
+                    },
+                }
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
@@ -317,6 +350,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def delete_artefact_gsma(self, federation_context_id: str, artefact_id: str):
         try:
             response = self._delete_artefact(artefact_id)
+            if response.status_code == 200:
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content='{"response": "Artefact deletion successful"}',
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
@@ -334,6 +376,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             payload = schemas.ApplicationOnboardingRequest(profile_data=data)
             url = "{}/application/onboarding".format(self.base_url)
             response = i2edge_post(url, payload)
+            if response.status_code == 200:
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content={"response": "Application onboarded successfully"},
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA onboarding payload: {e}")
@@ -341,6 +392,25 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def get_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Dict:
         try:
             response = self.get_onboarded_app(app_id)
+            if response.status_code == 200:
+                response_json = response.json()
+                profile_data = response_json.get("profile_data")
+                content = {
+                    "appId": profile_data.get("app_id"),
+                    "appProviderId": "string",
+                    "appDeploymentZones": profile_data.get("appDeploymentZones"),
+                    "appMetaData": profile_data.get("appMetadata"),
+                    "appQoSProfile": profile_data.get("appQoSProfile"),
+                    "appComponentSpecs": profile_data.get("appComponentSpecs"),
+                }
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
@@ -353,6 +423,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str):
         try:
             response = self.delete_onboarded_app(app_id)
+            if response.status_code == 200:
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content={"response": "App deletion successful"},
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
@@ -376,6 +455,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             )
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_post(url, payload)
+            if response.status_code == 202:
+                response_json = response.json()
+                content = {
+                    "zoneId": response_json.get("zoneID"),
+                    "appInstIdentifier": response_json.get("app_instance_id"),
+                }
+                return self._build_custom_gsma_response(
+                    status_code=202,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA deployment payload: {e}")
@@ -393,6 +486,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             )
             params = {}
             response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                response_json = response.json()
+                content = {
+                    "appInstanceState": response_json.get("appInstanceState"),
+                    "accesspointInfo": response_json.get("accesspointInfo"),
+                }
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appId or zoneId in GSMA payload: {e}")
@@ -407,6 +514,32 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             url = "{}/application_instances".format(self.base_url)
             params = {}
             response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                response_json = response.json()
+                response_list = []
+                for item in response_json:
+                    content = [
+                        {
+                            "zoneId": item.get("app_spec")
+                            .get("nodeSelector")
+                            .get("feature.node.kubernetes.io/zoneID"),
+                            "appInstanceInfo": [
+                                {
+                                    "appInstIdentifier": item.get("app_instance_id"),
+                                    "appInstanceState": item.get("deploy_status"),
+                                }
+                            ],
+                        }
+                    ]
+                    response_list.append(content)
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=response_list,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Error retrieving apps: {e}")
@@ -421,6 +554,43 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         try:
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_delete(url, app_instance_id)
+            if response.status_code == 200:
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content={
+                        "response": "Application instance termination request accepted"
+                    },
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appInstanceId in GSMA payload: {e}")
+
+    # GSMA Support methods
+
+    def _build_custom_gsma_response(
+        self,
+        status_code: int,
+        content: str | bytes | dict | list,
+        headers: dict = None,
+        encoding: str = None,
+        url: str = None,
+        request=None,
+    ) -> Response:
+        response = Response()
+        response.status_code = status_code
+        if isinstance(content, (dict, list)):
+            content = json.dumps(content)
+        response._content = (
+            content.encode(encoding or "utf-8") if isinstance(content, str) else content
+        )
+        response.headers.update(headers or {})
+        response.encoding = encoding or "utf-8"
+        if url:
+            response.url = url
+        if request:
+            response.request = request
+        return response

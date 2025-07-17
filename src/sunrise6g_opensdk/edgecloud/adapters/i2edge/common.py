@@ -5,6 +5,7 @@
 #
 # Contributors:
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
+#   - César Cajas (cesar.cajas@i2cat.net)
 ##
 import json
 from typing import Optional
