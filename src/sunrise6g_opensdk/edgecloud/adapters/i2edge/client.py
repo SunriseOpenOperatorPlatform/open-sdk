@@ -254,16 +254,91 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     # FederationManagement
 
+    def get_edge_cloud_zones_list_gsma(self) -> List:
+        url = "{}/zones/list".format(self.base_url)
+        params = {}
+        try:
+            response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                response_json = response.json()
+                response_list = []
+                for item in response_json:
+                    content = {
+                        "zoneId": item.get("zoneId"),
+                        "geolocation": item.get("geolocation"),
+                        "geographyDetails": item.get("geographyDetails"),
+                    }
+                    response_list.append(content)
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=response_list,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
+            return response
+        except I2EdgeError as e:
+            raise e
+
     def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> Dict:
         url = "{}/zones".format(self.base_url)
         params = {}
         try:
             response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                response_json = response.json()
+                response_list = []
+                for item in response_json:
+                    content = {
+                        "zoneId": item.get("zoneId"),
+                        "reservedComputeResources": item.get(
+                            "reservedComputeResources"
+                        ),
+                        "computeResourceQuotaLimits": item.get(
+                            "computeResourceQuotaLimits"
+                        ),
+                        "flavoursSupported": item.get("flavoursSupported"),
+                        "networkResources": item.get("networkResources"),
+                        "zoneServiceLevelObjsInfo": item.get(
+                            "zoneServiceLevelObjsInfo"
+                        ),
+                    }
+                    response_list.append(content)
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=response_list,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except I2EdgeError as e:
             raise e
 
     # AvailabilityZoneInfoSynchronization
+
+    def availability_zone_info_gsma(
+        self, federation_context_id: str, request_body: dict
+    ) -> Dict:
+        url = "{}/zones".format(self.base_url)
+        params = {}
+        try:
+            response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                content = {"acceptedZoneResourceInfo": response.json()}
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
+            return response
+        except I2EdgeError as e:
+            raise e
 
     def get_edge_cloud_zone_details_gsma(
         self, federation_context_id: str, zone_id: str
@@ -272,6 +347,30 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         params = {}
         try:
             response = i2edge_get(url, params=params)
+            if response.status_code == 200:
+                response_json = response.json()
+                content = {
+                    "zoneId": response_json.get("zoneID"),
+                    "reservedComputeResources": response_json.get(
+                        "reservedComputeResources"
+                    ),
+                    "computeResourceQuotaLimits": response_json.get(
+                        "computeResourceQuotaLimits"
+                    ),
+                    "flavoursSupported": response_json.get("flavoursSupported"),
+                    "networkResources": response_json.get("networkResources"),
+                    "zoneServiceLevelObjsInfo": response_json.get(
+                        "zoneServiceLevelObjsInfo"
+                    ),
+                }
+                return self._build_custom_gsma_response(
+                    status_code=200,
+                    content=content,
+                    headers={"Content-Type": self.content_type_gsma},
+                    encoding=self.encoding_gsma,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
         except I2EdgeError as e:
             raise e
@@ -444,11 +543,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         body = deepcopy(request_body)
         try:
             zone_id = body.get("zoneInfo").get("zoneId")
+            flavour_id = body.get("zoneInfo").get("flavourId")
             app_deploy_data = schemas.AppDeployData(
                 appId=body.get("appId"),
                 appProviderId=body.get("appProviderId"),
                 appVersion=body.get("appVersion"),
-                zoneInfo=schemas.ZoneInfo(flavourId=self.flavour_id, zoneId=zone_id),
+                zoneInfo=schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
             )
             payload = schemas.AppDeploy(
                 app_deploy_data=app_deploy_data, app_parameters={"namespace": "test"}

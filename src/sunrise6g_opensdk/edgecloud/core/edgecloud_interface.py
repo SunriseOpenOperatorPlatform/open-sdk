@@ -125,6 +125,15 @@ class EdgeCloudManagementInterface(ABC):
     # FederationManagement
 
     @abstractmethod
+    def get_edge_cloud_zones_list_gsma(self) -> List:
+        """
+        Retrieves details of all Zones
+
+        :return: List.
+        """
+        pass
+
+    @abstractmethod
     def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> List:
         """
         Retrieves details of Zones
@@ -135,6 +144,21 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     # AvailabilityZoneInfoSynchronization
+
+    @abstractmethod
+    def availability_zone_info_gsma(
+        self, federation_context_id: str, request_body: dict
+    ) -> Dict:
+        """
+        Originating OP informs partner OP that it is willing to access
+        the specified zones and partner OP shall reserve compute and
+        network resources for these zones.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param request_body: Payload.
+        :return:
+        """
+        pass
 
     @abstractmethod
     def get_edge_cloud_zone_details_gsma(

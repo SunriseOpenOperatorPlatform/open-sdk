@@ -263,3 +263,205 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             }
         ]
         return app
+
+    # --- GSMA-specific methods ---
+
+    # FederationManagement
+
+    def get_edge_cloud_zones_list_gsma(self) -> List:
+        """
+        Retrieves details of all Zones
+
+        :return: List.
+        """
+
+    pass
+
+    def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> List:
+        """
+        Retrieves details of Zones
+
+        :param federation_context_id: Identifier of the federation context.
+        :return: List.
+        """
+        pass
+
+    # AvailabilityZoneInfoSynchronization
+
+    def availability_zone_info_gsma(
+        self, federation_context_id: str, request_body: dict
+    ) -> Dict:
+        """
+        Originating OP informs partner OP that it is willing to access
+        the specified zones and partner OP shall reserve compute and
+        network resources for these zones.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param request_body: Payload.
+        :return:
+        """
+        pass
+
+    def get_edge_cloud_zone_details_gsma(
+        self, federation_context_id: str, zone_id: str
+    ) -> Dict:
+        """
+        Retrieves details of a specific Edge Cloud Zone reserved
+        for the specified zone by the partner OP.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param zone_id: Unique identifier of the Edge Cloud Zone.
+        :return: Dictionary with Edge Cloud Zone details.
+        """
+        pass
+
+    # ArtefactManagement
+
+    def create_artefact_gsma(
+        self, federation_context_id: str, request_body: dict
+    ) -> Dict:
+        """
+        Uploads application artefact on partner OP. Artefact is a zip file
+        containing scripts and/or packaging files like Terraform or Helm
+        which are required to create an instance of an application
+
+        :param federation_context_id: Identifier of the federation context.
+        :param request_body: Payload with artefact information.
+        :return: Details with artefact deployment info.
+        """
+        pass
+
+    def get_artefact_gsma(self, federation_context_id: str, artefact_id: str) -> Dict:
+        """
+        Retrieves details about an artefact
+
+        :param federation_context_id: Identifier of the federation context.
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Dictionary with artefact details.
+        """
+        pass
+
+    def delete_artefact_gsma(
+        self, federation_context_id: str, artefact_id: str
+    ) -> Dict:
+        """
+        Removes an artefact from partners OP.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Dictionary with artefact deletion details.
+        """
+        pass
+
+    # ApplicationOnboardingManagement
+
+    def onboard_app_gsma(self, federation_context_id: str, request_body: dict) -> Dict:
+        """
+        Submits an application details to a partner OP.
+        Based on the details provided, partner OP shall do bookkeeping,
+        resource validation and other pre-deployment operations.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param request_body: Payload with onboarding info.
+        :return: Dictionary with onboarding details.
+        """
+        pass
+
+    def get_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Dict:
+        """
+        Retrieves application details from partner OP
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :return:
+        """
+        pass
+
+    def patch_onboarded_app_gsma(
+        self, federation_context_id: str, app_id: str, request_body: dict
+    ) -> Dict:
+        """
+        Updates partner OP about changes in application compute resource requirements,
+        QOS Profile, associated descriptor or change in associated components
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :return:
+        """
+        pass
+
+    def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str):
+        """
+        Deboards an application from specific partner OP zones
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :return:
+        """
+        pass
+
+    # ApplicationDeploymentManagement
+
+    def deploy_app_gsma(
+        self, federation_context_id: str, idempotency_key: str, request_body: dict
+    ):
+        """
+        Instantiates an application on a partner OP zone.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param idempotency_key: Idempotency key.
+        :return:
+        """
+        pass
+
+    def get_deployed_app_gsma(
+        self,
+        federation_context_id: str,
+        app_id: str,
+        app_instance_id: str,
+        zone_id: str,
+    ):
+        """
+        Retrieves an application instance details from partner OP.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed app.
+        :param zone_id: Identifier of the zone
+        :return:
+        """
+        pass
+
+    def get_all_deployed_apps_gsma(
+        self,
+        federation_context_id: str,
+        app_id: str,
+        app_provider: str,
+    ):
+        """
+        Retrieves all application instance of partner OP
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the app.
+        :param app_provider: App provider
+        :return:
+        """
+        pass
+
+    def undeploy_app_gsma(
+        self,
+        federation_context_id: str,
+        app_id: str,
+        app_instance_id: str,
+        zone_id: str,
+    ):
+        """
+        Terminate an application instance on a partner OP zone.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed app.
+        :param zone_id: Identifier of the zone
+        :return:
+        """
+        pass
