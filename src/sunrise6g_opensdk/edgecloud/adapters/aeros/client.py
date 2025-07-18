@@ -432,7 +432,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         }
         return result
 
-        # --- GSMA-specific methods ---
+    # --- GSMA-specific methods ---
 
     # FederationManagement
 
