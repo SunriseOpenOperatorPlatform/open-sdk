@@ -10,6 +10,10 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
+from .schemas import (
+    EdgeCloudZone,
+)
+
 
 class EdgeCloudManagementInterface(ABC):
     """
@@ -96,7 +100,7 @@ class EdgeCloudManagementInterface(ABC):
     @abstractmethod
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
-    ) -> List[Dict]:
+    ) -> List[EdgeCloudZone]:
         """
         Retrieves a list of available Edge Cloud Zones.
 
