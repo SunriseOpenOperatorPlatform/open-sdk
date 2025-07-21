@@ -110,20 +110,6 @@ class EdgeCloudManagementInterface(ABC):
         """
         pass
 
-    @abstractmethod
-    def get_edge_cloud_zones_details(
-        self, federation_context_id: str, zone_id: str
-    ) -> Dict:
-        """
-        Retrieves details of a specific Edge Cloud Zone reserved
-        for the specified zone by the partner OP.
-
-        :param federation_context_id: Identifier of the federation context.
-        :param zone_id: Unique identifier of the Edge Cloud Zone.
-        :return: Dictionary with Edge Cloud Zone details.
-        """
-        pass
-
     # --- GSMA-specific methods ---
 
     # FederationManagement
