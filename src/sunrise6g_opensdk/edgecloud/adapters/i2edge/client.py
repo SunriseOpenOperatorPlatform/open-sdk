@@ -88,20 +88,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             log.error(f"Failed to retrieve edge cloud zones: {e}")
             raise
 
-    # TODO: Delete it
-    def get_edge_cloud_zones_details(
-        self, zone_id: str, flavour_id: Optional[str] = None
-    ) -> Dict:
-        url = "{}zone/{}".format(self.base_url, zone_id)
-        params = {}
-        try:
-            response = i2edge_get(url, params=params)
-            log.info("Availability zone details retrieved successfully")
-            return response
-        except I2EdgeError as e:
-            raise e
-
-    def _create_artefact(
+    def create_artefact(
         self,
         artefact_id: str,
         artefact_name: str,
