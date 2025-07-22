@@ -42,7 +42,12 @@ def i2edge_post(url: str, model_payload: BaseModel) -> dict:
         "Content-Type": "application/json",
         "accept": "application/json",
     }
-    json_payload = json.dumps(model_payload.model_dump(mode="json"))
+    if isinstance(model_payload, BaseModel):
+        json_payload = json.dumps(model_payload.model_dump(mode="json"))
+    elif isinstance(model_payload, dict):
+        json_payload = json.dumps(model_payload)
+    else:
+        raise TypeError("Payload must be a Pydantic model or a dict.")
     try:
         response = requests.post(url, data=json_payload, headers=headers)
         response.raise_for_status()
