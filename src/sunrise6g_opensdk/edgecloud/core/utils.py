@@ -16,7 +16,7 @@ from sunrise6g_opensdk import logger
 log = logger.get_logger(__name__)
 
 
-def _ensure_valid_uuid(value: str) -> str:
+def ensure_valid_uuid(value: str) -> str:
     """
     Return the original value if it's a valid UUID,
     or generate a deterministic UUIDv5 from the input string otherwise.
@@ -32,7 +32,7 @@ def _ensure_valid_uuid(value: str) -> str:
     return generated
 
 
-def _build_custom_http_response(
+def build_custom_http_response(
     status_code: int,
     content: str | bytes | dict | list,
     headers: dict = None,
