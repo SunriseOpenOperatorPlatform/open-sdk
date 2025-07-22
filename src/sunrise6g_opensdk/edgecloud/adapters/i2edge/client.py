@@ -168,7 +168,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def _get_artefact(self, artefact_id: str) -> Dict:
+    def get_artefact(self, artefact_id: str) -> Dict:
         url = "{}/artefact/{}".format(self.base_url, artefact_id)
         try:
             response = i2edge_get(url, artefact_id)
@@ -177,7 +177,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def _get_all_artefacts(self) -> List[Dict]:
+    def get_all_artefacts(self) -> List[Dict]:
         url = "{}/artefact".format(self.base_url)
         try:
             response = i2edge_get(url, {})
@@ -186,7 +186,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def _delete_artefact(self, artefact_id: str):
+    def delete_artefact(self, artefact_id: str):
         url = "{}/artefact".format(self.base_url)
         try:
             response = i2edge_delete(url, artefact_id)
