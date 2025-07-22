@@ -6,6 +6,7 @@
 # Contributors:
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
 #   - César Cajas (cesar.cajas@i2cat.net)
+#   - Adrián Pino Martínez (adrian.pino@i2cat.net)
 ##
 from enum import Enum
 from typing import List, Optional

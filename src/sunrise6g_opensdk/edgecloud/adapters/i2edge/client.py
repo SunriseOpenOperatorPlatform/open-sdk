@@ -7,10 +7,8 @@
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
 #   - César Cajas (cesar.cajas@i2cat.net)
 ##
-import json
 from copy import deepcopy
 from typing import Dict, List, Optional
-from uuid import NAMESPACE_DNS, UUID, uuid5
 
 from pydantic import ValidationError
 from requests import Response
@@ -19,6 +17,10 @@ from sunrise6g_opensdk import logger
 from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from sunrise6g_opensdk.edgecloud.core.edgecloud_interface import (
     EdgeCloudManagementInterface,
+)
+from sunrise6g_opensdk.edgecloud.core.utils import (
+    _build_custom_http_response,
+    _ensure_valid_uuid,
 )
 
 from ...adapters.i2edge import schemas as i2edge_schemas
@@ -31,49 +33,6 @@ from .common import (
 )
 
 log = logger.get_logger(__name__)
-
-
-# TODO: Check if this should be deleted
-# Workaround function to avoid the SDK crash when ZoneId is not a valid UUID (e.g. Omega)
-def _ensure_valid_uuid(value: str) -> str:
-    """
-    Return the original value if it's a valid UUID,
-    or generate a deterministic UUIDv5 from the input string otherwise.
-    """
-    try:
-        UUID(value)
-        return value
-    except ValueError:
-        generated = str(uuid5(NAMESPACE_DNS, value))
-        log.warning(
-            f"[WARNING] Invalid UUID '{value}' – using generated UUIDv5: {generated}"
-        )
-    return generated
-
-
-# TODO: Move this to common utils file
-def _build_custom_http_response(
-    status_code: int,
-    content: str | bytes | dict | list,
-    headers: dict = None,
-    encoding: str = None,
-    url: str = None,
-    request=None,
-) -> Response:
-    response = Response()
-    response.status_code = status_code
-    if isinstance(content, (dict, list)):
-        content = json.dumps(content)
-    response._content = (
-        content.encode(encoding or "utf-8") if isinstance(content, str) else content
-    )
-    response.headers.update(headers or {})
-    response.encoding = encoding or "utf-8"
-    if url:
-        response.url = url
-    if request:
-        response.request = request
-    return response
 
 
 class EdgeApplicationManager(EdgeCloudManagementInterface):
