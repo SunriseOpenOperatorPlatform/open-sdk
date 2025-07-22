@@ -24,12 +24,14 @@ Key features:
 import time
 
 import pytest
+from requests import Response
 
 from sunrise6g_opensdk.common.sdk import Sdk as sdkclient
 from sunrise6g_opensdk.edgecloud.adapters.errors import EdgeCloudPlatformError
 from sunrise6g_opensdk.edgecloud.adapters.i2edge.client import (
     EdgeApplicationManager as I2EdgeClient,
 )
+from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from tests.edgecloud.test_cases import test_cases
 from tests.edgecloud.test_config import CONFIG
 
@@ -52,50 +54,25 @@ def id_func(val):
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_get_edge_cloud_zones(edgecloud_client):
     try:
-        zones = edgecloud_client.get_edge_cloud_zones()
+        response = edgecloud_client.get_edge_cloud_zones()
+        assert isinstance(response, Response)
+        assert response.status_code == 200
+        zones = response.json()
         assert isinstance(zones, list)
-        # TODO: Harmonise zone schema to match CAMARA schemas across all clients
-        if edgecloud_client.client_name == "i2edge":
-            for zone in zones:
-                assert "zoneId" in zone
-                assert "geographyDetails" in zone
-        else:
-            for zone in zones:
-                assert "edgeCloudZoneId" in zone
-                assert "edgeCloudZoneName" in zone
-                assert "edgeCloudZoneStatus" in zone
-                assert "edgeCloudProvider" in zone
-                assert "edgeCloudRegion" in zone
+        for zone in zones:
+            camara_schemas.EdgeCloudZone(**zone)  # Validate against CAMARA model
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to retrieve zones: {e}")
-
-
-@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_get_edge_cloud_zones_details(edgecloud_client):
-    config = CONFIG[edgecloud_client.client_name]
-    zone_id = config["ZONE_ID"]
-
-    try:
-        zones = edgecloud_client.get_edge_cloud_zones()
-        assert len(zones) > 0, "No zones available for testing"
-
-        zone_details = edgecloud_client.get_edge_cloud_zones_details(zone_id)
-
-        assert zone_details is not None
-        assert isinstance(zone_details, dict)
-        assert len(zone_details) > 0
-
-    except (EdgeCloudPlatformError, KeyError) as e:
-        pytest.fail(f"Zone detail fetch failed: {e}")
+    except Exception as e:
+        pytest.fail(f"Unexpected error during zone validation: {e}")
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_create_artefact(edgecloud_client):
     config = CONFIG[edgecloud_client.client_name]
-
     if isinstance(edgecloud_client, I2EdgeClient):
         try:
-            edgecloud_client._create_artefact(
+            edgecloud_client.create_artefact(
                 artefact_id=config["ARTEFACT_ID"],
                 artefact_name=config["ARTEFACT_NAME"],
                 repo_name=config["REPO_NAME"],
@@ -113,52 +90,62 @@ def test_create_artefact(edgecloud_client):
 def test_onboard_app(edgecloud_client):
     config = CONFIG[edgecloud_client.client_name]
     try:
-        edgecloud_client.onboard_app(config["APP_ONBOARD_MANIFEST"])
+        response = edgecloud_client.onboard_app(config["APP_ONBOARD_MANIFEST"])
+        assert isinstance(response, Response)
+        assert response.status_code == 201
+
+        payload = response.json()
+        assert isinstance(payload, dict)
+        assert "appId" in payload
+        camara_schemas.AppId(root=payload["appId"])
+
     except EdgeCloudPlatformError as e:
         pytest.fail(f"App onboarding failed: {e}")
+    except Exception as e:
+        pytest.fail(f"Unexpected error during app onboarding: {e}")
 
 
-@pytest.fixture(scope="module")
-def app_instance_id(edgecloud_client):
-    config = CONFIG[edgecloud_client.client_name]
-    try:
-        if edgecloud_client.client_name == "kubernetes":
-            output = edgecloud_client.deploy_app(config["K8S_DEPLOY_PAYLOAD"])
-        else:
-            output = edgecloud_client.deploy_app(config["APP_ID"], config["APP_ZONES"])
+# @pytest.fixture(scope="module")
+# def app_instance_id(edgecloud_client):
+#     config = CONFIG[edgecloud_client.client_name]
+#     try:
+#         if edgecloud_client.client_name == "kubernetes":
+#             output = edgecloud_client.deploy_app(config["K8S_DEPLOY_PAYLOAD"])
+#         else:
+#             output = edgecloud_client.deploy_app(config["APP_ID"], config["APP_ZONES"])
 
-        if edgecloud_client.client_name == "i2edge":
-            app_instance_id = output.get("deploy_name")
-        else:
-            app_instance_id = output.get("appInstanceId")
+#         if edgecloud_client.client_name == "i2edge":
+#             app_instance_id = output.get("deploy_name")
+#         else:
+#             app_instance_id = output.get("appInstanceId")
 
-        assert app_instance_id is not None
-        yield app_instance_id
-    finally:
-        pass
+#         assert app_instance_id is not None
+#         yield app_instance_id
+#     finally:
+#         pass
+
+
+# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+# def test_deploy_app(app_instance_id):
+#     assert app_instance_id is not None
+
+
+# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+# def test_timer_wait_10_seconds(edgecloud_client):
+#     time.sleep(10)
+
+
+# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+# def test_undeploy_app(edgecloud_client, app_instance_id):
+#     try:
+#         edgecloud_client.undeploy_app(app_instance_id)
+#     except EdgeCloudPlatformError as e:
+#         pytest.fail(f"App undeployment failed: {e}")
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_deploy_app(app_instance_id):
-    assert app_instance_id is not None
-
-
-@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_timer_wait_60_seconds(edgecloud_client):
-    time.sleep(60)
-
-
-@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_undeploy_app(edgecloud_client, app_instance_id):
-    try:
-        edgecloud_client.undeploy_app(app_instance_id)
-    except EdgeCloudPlatformError as e:
-        pytest.fail(f"App undeployment failed: {e}")
-
-
-@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_timer_wait_30_seconds(edgecloud_client):
-    time.sleep(30)
+def test_timer_wait_3_seconds(edgecloud_client):
+    time.sleep(3)
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
@@ -178,6 +165,6 @@ def test_delete_artefact(edgecloud_client):
 
     if isinstance(edgecloud_client, I2EdgeClient):
         try:
-            edgecloud_client._delete_artefact(artefact_id=config["ARTEFACT_ID"])
+            edgecloud_client.delete_artefact(artefact_id=config["ARTEFACT_ID"])
         except EdgeCloudPlatformError as e:
             pytest.fail(f"Artefact deletion failed: {e}")

@@ -63,9 +63,9 @@ class ArtefactOnboarding(BaseModel):
 
 class AppComponentSpec(BaseModel):
     artefactId: str
-    componentName: str = Field(default="default_component")
-    serviceNameEW: str = Field(default="default_ew_service")
-    serviceNameNB: str = Field(default="default_nb_service")
+    componentName: Optional[str] = Field(default="default_component")
+    serviceNameEW: Optional[str] = Field(default="default_ew_service")
+    serviceNameNB: Optional[str] = Field(default="default_nb_service")
 
 
 class AppMetaData(BaseModel):
@@ -91,7 +91,6 @@ class ApplicationOnboardingData(BaseModel):
     appMetaData: AppMetaData = Field(default_factory=AppMetaData)
     appProviderId: str = Field(default="default_provider")
     appQoSProfile: AppQoSProfile = Field(default_factory=AppQoSProfile)
-    appStatusCallbackLink: Optional[str] = None
 
 
 class ApplicationOnboardingRequest(BaseModel):

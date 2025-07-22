@@ -1,16 +1,16 @@
 CONFIG = {
     "i2edge": {
         "ZONE_ID": "Omega",
-        "ARTEFACT_ID": "i2edgechart-id-2",
+        "ARTEFACT_ID": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
         "ARTEFACT_NAME": "i2edgechart",
         "REPO_NAME": "github-cesar",
         "REPO_TYPE": "PUBLICREPO",
         "REPO_URL": "https://cesarcajas.github.io/helm-charts-examples/",
         "APP_ONBOARD_MANIFEST": {
-            "appId": "i2edgechart-id-2",
-            "name": "i2edge-app-SDK",
+            "appId": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
+            "name": "i2edge_app_SDK",
             "version": "1.0.0",
-            "appProvider": "i2CAT",
+            "appProvider": "i2CAT_DEV",
             "packageType": "CONTAINER",
             "appRepo": {
                 "type": "PUBLICREPO",
@@ -46,7 +46,7 @@ CONFIG = {
                 }
             ],
         },
-        "APP_ID": "i2edgechart-id-2",
+        "APP_ID": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
         "APP_ZONES": [
             {
                 "kubernetesClusterRef": "not-used",
@@ -124,7 +124,7 @@ CONFIG = {
     "kubernetes": {
         "K8S_ONBOARDED_APP_NAME": "nginx",
         "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
+        "ZONE_ID": "b2a1b33d-f382-47de-b555-2d32155eb74c",
         "K8S_DEPLOY_PAYLOAD": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "name": "nginx-test",

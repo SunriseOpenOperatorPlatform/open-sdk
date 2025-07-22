@@ -10,9 +10,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
-from .schemas import (
-    EdgeCloudZone,
-)
+from requests import Response
 
 
 class EdgeCloudManagementInterface(ABC):
@@ -21,7 +19,20 @@ class EdgeCloudManagementInterface(ABC):
     """
 
     @abstractmethod
-    def onboard_app(self, app_manifest: Dict) -> Dict:
+    def get_edge_cloud_zones(
+        self, region: Optional[str] = None, status: Optional[str] = None
+    ) -> Response:
+        """
+        Retrieves a list of available Edge Cloud Zones.
+
+        :param region: Filter by geographical region.
+        :param status: Filter by status (active, inactive, unknown).
+        :return: List of Edge Cloud Zones.
+        """
+        pass
+
+    @abstractmethod
+    def onboard_app(self, app_manifest: Dict) -> Response:
         """
         Onboards an app, submitting application metadata
         to the Edge Cloud Provider.
@@ -94,19 +105,6 @@ class EdgeCloudManagementInterface(ABC):
         Terminates a specific application instance.
 
         :param app_instance_id: Unique identifier of the application instance.
-        """
-        pass
-
-    @abstractmethod
-    def get_edge_cloud_zones(
-        self, region: Optional[str] = None, status: Optional[str] = None
-    ) -> List[EdgeCloudZone]:
-        """
-        Retrieves a list of available Edge Cloud Zones.
-
-        :param region: Filter by geographical region.
-        :param status: Filter by status (active, inactive, unknown).
-        :return: List of Edge Cloud Zones.
         """
         pass
 
