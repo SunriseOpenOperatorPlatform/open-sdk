@@ -8,31 +8,75 @@
 #   - César Cajas (cesar.cajas@i2cat.net)
 #   - Adrián Pino Martínez (adrian.pino@i2cat.net)
 ##
+
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
+
+# Zone and Flavour
 
 
-class ZoneInfo(BaseModel):
+class ZoneInfoRef(BaseModel):
     flavourId: str
     zoneId: str
 
 
-class AppParameters(BaseModel):
-    namespace: Optional[str] = None
+class ZoneInfo(BaseModel):
+    zoneId: str
+    geographyDetails: Optional[str] = None
+    geolocation: Optional[str] = None
+    computeResourceQuotaLimits: Optional[List[dict]] = None
+    flavoursSupported: Optional[List["Flavour"]] = None
+    networkResources: Optional[dict] = None
+    reservedComputeResources: Optional[List[dict]] = None
+    zoneServiceLevelObjsInfo: Optional[dict] = None
 
 
-class AppDeployData(BaseModel):
-    appId: str
-    appProviderId: str
-    appVersion: str
-    zoneInfo: ZoneInfo
+class Hugepages(BaseModel):
+    number: int = Field(default=0, description="Number of hugepages")
+    pageSize: str = Field(default="2MB", description="Size of hugepages")
 
 
-class AppDeploy(BaseModel):
-    app_deploy_data: AppDeployData
-    app_parameters: Optional[AppParameters] = Field(default=AppParameters())
+class GPU(BaseModel):
+    gpuMemory: int = Field(default=0, description="GPU memory in MB")
+    gpuModeName: str = Field(default="", description="GPU mode name")
+    gpuVendorType: str = Field(
+        default="GPU_PROVIDER_NVIDIA", description="GPU vendor type"
+    )
+    numGPU: int = Field(..., description="Number of GPUs")
+
+
+class SupportedOSTypes(BaseModel):
+    architecture: str = Field(default="x86_64", description="OS architecture")
+    distribution: str = Field(default="RHEL", description="OS distribution")
+    license: str = Field(default="OS_LICENSE_TYPE_FREE", description="OS license type")
+    version: str = Field(default="OS_VERSION_UBUNTU_2204_LTS", description="OS version")
+
+
+class FlavourSupported(BaseModel):
+    cpuArchType: str = Field(default="ISA_X86", description="CPU architecture type")
+    cpuExclusivity: bool = Field(default=True, description="CPU exclusivity")
+    fpga: int = Field(default=0, description="Number of FPGAs")
+    gpu: Optional[List[GPU]] = Field(default=None, description="List of GPUs")
+    hugepages: List[Hugepages] = Field(
+        default_factory=lambda: [Hugepages()], description="List of hugepages"
+    )
+    memorySize: int = Field(..., description="Memory size in MB")
+    numCPU: int = Field(..., description="Number of CPUs")
+    storageSize: int = Field(default=0, description="Storage size in GB")
+    supportedOSTypes: List[SupportedOSTypes] = Field(
+        default_factory=lambda: [SupportedOSTypes()],
+        description="List of supported OS types",
+    )
+    vpu: int = Field(default=0, description="Number of VPUs")
+
+
+class Flavour(BaseModel):
+    id: Optional[str] = None
+    date: Optional[int] = None
+    zone_id: Optional[str] = None
+    flavour_supported: FlavourSupported
 
 
 # Artefact
@@ -59,8 +103,6 @@ class ArtefactOnboarding(BaseModel):
 
 # Application Onboarding
 
-# XXX Leaving default values since i2edge only cares about appid and artifactid, at least for now.
-
 
 class AppComponentSpec(BaseModel):
     artefactId: str
@@ -75,6 +117,7 @@ class AppMetaData(BaseModel):
     category: str = Field(default="DEFAULT")
     mobilitySupport: bool = Field(default=False)
     version: str = Field(default="1.0")
+    accessToken: Optional[str] = None
 
 
 class AppQoSProfile(BaseModel):
@@ -92,73 +135,39 @@ class ApplicationOnboardingData(BaseModel):
     appMetaData: AppMetaData = Field(default_factory=AppMetaData)
     appProviderId: str = Field(default="default_provider")
     appQoSProfile: AppQoSProfile = Field(default_factory=AppQoSProfile)
+    appStatusCallbackLink: Optional[str] = None
 
 
 class ApplicationOnboardingRequest(BaseModel):
     profile_data: ApplicationOnboardingData
 
 
-# Flavour
+# Application Deployment
 
 
-class GPU(BaseModel):
-    gpuMemory: int = Field(default=0, description="GPU memory in MB")
-    gpuModeName: str = Field(default="", description="GPU mode name")
-    gpuVendorType: str = Field(
-        default="GPU_PROVIDER_NVIDIA", description="GPU vendor type"
-    )
-    numGPU: int = Field(..., description="Number of GPUs")
+class AppParameters(BaseModel):
+    namespace: Optional[str] = None
 
 
-class Hugepages(BaseModel):
-    number: int = Field(default=0, description="Number of hugepages")
-    pageSize: str = Field(default="2MB", description="Size of hugepages")
+class AppDeployData(BaseModel):
+    appId: str
+    appProviderId: str
+    appVersion: str
+    zoneInfo: ZoneInfoRef
 
 
-class SupportedOSTypes(BaseModel):
-    architecture: str = Field(default="x86_64", description="OS architecture")
-    distribution: str = Field(default="RHEL", description="OS distribution")
-    license: str = Field(default="OS_LICENSE_TYPE_FREE", description="OS license type")
-    version: str = Field(default="OS_VERSION_UBUNTU_2204_LTS", description="OS version")
+class AppDeploy(BaseModel):
+    app_deploy_data: AppDeployData
+    app_parameters: Optional[AppParameters] = Field(default=AppParameters())
 
 
-class FlavourSupported(BaseModel):
-    cpuArchType: str = Field(default="ISA_X86", description="CPU architecture type")
-    cpuExclusivity: bool = Field(default=True, description="CPU exclusivity")
-    fpga: int = Field(default=0, description="Number of FPGAs")
-    gpu: Optional[List[GPU]] = Field(default=None, description="List of GPUs")
-    hugepages: List[Hugepages] = Field(
-        default_factory=lambda: [Hugepages()], description="List of hugepages"
-    )
-    memorySize: str = Field(..., description="Memory size (e.g., '1024MB' or '2GB')")
-    numCPU: int = Field(..., description="Number of CPUs")
-    storageSize: int = Field(default=0, description="Storage size in GB")
-    supportedOSTypes: List[SupportedOSTypes] = Field(
-        default_factory=lambda: [SupportedOSTypes()],
-        description="List of supported OS types",
-    )
-    vpu: int = Field(default=0, description="Number of VPUs")
-
-    @field_validator("memorySize")
-    @classmethod
-    def validate_memory_size(cls, v):
-        if not (v.endswith("MB") or v.endswith("GB")):
-            raise ValueError("memorySize must end with MB or GB")
-        try:
-            int(v[:-2])
-        except ValueError:
-            raise ValueError("memorySize must be a number followed by MB or GB")
-        return v
+class AppDeployResponse(BaseModel):
+    Message: str
+    app_instance_id: str
+    deploy_status: str
+    zoneID: str
 
 
-class Flavour(BaseModel):
-    flavour_supported: FlavourSupported
-
-
-# EdgeCloud Zones
-
-
-class Zone(BaseModel):
-    geographyDetails: str
-    geolocation: str
-    zoneId: str
+class AppMigration(BaseModel):
+    node_to_deploy: str
+    zone_id_to_deploy: str

@@ -454,7 +454,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             appId=appId,
             appProviderId=appProviderId,
             appVersion=appVersion,
-            zoneInfo=i2edge_schemas.ZoneInfo(flavourId=self.flavour_id, zoneId=zone_id),
+            zoneInfo=i2edge_schemas.ZoneInfoRef(
+                flavourId=self.flavour_id, zoneId=zone_id
+            ),
         )
         url = "{}/application_instance".format(self.base_url)
         payload = i2edge_schemas.AppDeploy(
