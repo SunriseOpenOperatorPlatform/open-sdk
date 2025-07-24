@@ -26,8 +26,15 @@ def main():
     # Examples:
     # EdgeCloud
     # print("Testing edgecloud client function: get_edge_cloud_zones:")
-    # zones = edgecloud_client.get_edge_cloud_zones()
-    # print(zones)
+    # zones_list = edgecloud_client.get_edge_cloud_zones()
+    # print(zones_list)
+    # print(zones_list.status_code)
+    # print(zones_list.json())
+
+    # Pretty print:
+    # import json
+    # zones = zones.json()
+    # print(json.dumps(zones, indent=2))
 
     # Network
     # print("Testing network client function: 'get_qod_session'")
