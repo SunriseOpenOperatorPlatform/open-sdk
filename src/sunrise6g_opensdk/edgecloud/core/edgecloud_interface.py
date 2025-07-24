@@ -29,6 +29,8 @@ class EdgeCloudManagementInterface(ABC):
         :param status: Filter by status (active, inactive, unknown).
         :return: List of Edge Cloud Zones.
         """
+        # TODO: Evaluate if the CAMARA-input format
+        # TODO: Evaluate the CAMARA-return format
         pass
 
     @abstractmethod
@@ -43,42 +45,43 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_onboarded_apps(self) -> List[Dict]:
+    def get_all_onboarded_apps(self) -> Response:
         """
         Retrieves a list of onboarded applications.
 
-        :return: List of application metadata dictionaries.
+        :return: Response with list of application metadata.
         """
         pass
 
     @abstractmethod
-    def get_onboarded_app(self, app_id: str) -> Dict:
+    def get_onboarded_app(self, app_id: str) -> Response:
         """
         Retrieves information of a specific onboarded application.
 
         :param app_id: Unique identifier of the application.
-        :return: Dictionary with application details.
+        :return: Response with application details.
         """
         pass
 
     @abstractmethod
-    def delete_onboarded_app(self, app_id: str) -> None:
+    def delete_onboarded_app(self, app_id: str) -> Response:
         """
         Deletes an application onboarded from the Edge Cloud Provider.
 
         :param app_id: Unique identifier of the application.
+        :return: Response confirming deletion.
         """
         pass
 
     @abstractmethod
-    def deploy_app(self, app_id: str, app_zones: List[Dict]) -> Dict:
+    def deploy_app(self, app_id: str, app_zones: List[Dict]) -> Response:
         """
         Requests the instantiation of an application instance.
 
         :param app_id: Unique identifier of the application.
         :param app_zones: List of Edge Cloud Zones where the app should be
         instantiated.
-        :return: Dictionary with instance details.
+        :return: Response with instance details.
         """
         pass
 
@@ -100,11 +103,12 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     @abstractmethod
-    def undeploy_app(self, app_instance_id: str) -> None:
+    def undeploy_app(self, app_instance_id: str) -> Response:
         """
         Terminates a specific application instance.
 
         :param app_instance_id: Unique identifier of the application instance.
+        :return: Response confirming termination.
         """
         pass
 

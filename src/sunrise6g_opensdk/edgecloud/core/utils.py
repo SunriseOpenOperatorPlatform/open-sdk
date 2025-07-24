@@ -7,29 +7,12 @@
 #   - César Cajas (cesar.cajas@i2cat.net)
 ##
 import json
-from uuid import NAMESPACE_DNS, UUID, uuid5
 
 from requests import Response
 
 from sunrise6g_opensdk import logger
 
 log = logger.get_logger(__name__)
-
-
-def ensure_valid_uuid(value: str) -> str:
-    """
-    Return the original value if it's a valid UUID,
-    or generate a deterministic UUIDv5 from the input string otherwise.
-    """
-    try:
-        UUID(value)
-        return value
-    except ValueError:
-        generated = str(uuid5(NAMESPACE_DNS, value))
-        log.warning(
-            f"[WARNING] Invalid UUID '{value}' – using generated UUIDv5: {generated}"
-        )
-    return generated
 
 
 def build_custom_http_response(

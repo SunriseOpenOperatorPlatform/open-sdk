@@ -52,6 +52,56 @@ def id_func(val):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_config_camara_compliance(edgecloud_client):
+    """Validate that all test configurations are CAMARA-compliant"""
+    config = CONFIG[edgecloud_client.client_name]
+
+    try:
+        # Validate APP_ONBOARD_MANIFEST is CAMARA-compliant
+        if "APP_ONBOARD_MANIFEST" in config:
+            app_manifest = config["APP_ONBOARD_MANIFEST"]
+            camara_schemas.AppManifest(
+                **app_manifest
+            )  # Validate against CAMARA AppManifest schema
+
+        # Validate APP_DEPLOY_PAYLOAD is CAMARA-compliant
+        if "APP_DEPLOY_PAYLOAD" in config:
+            deploy_payload = config["APP_DEPLOY_PAYLOAD"]
+
+            # Validate appId
+            assert "appId" in deploy_payload
+            camara_schemas.AppId(root=deploy_payload["appId"])
+
+            # Validate appZones structure
+            assert "appZones" in deploy_payload
+            assert isinstance(deploy_payload["appZones"], list)
+            assert len(deploy_payload["appZones"]) > 0
+
+            for zone_data in deploy_payload["appZones"]:
+                assert "EdgeCloudZone" in zone_data
+                edge_cloud_zone = zone_data["EdgeCloudZone"]
+                camara_schemas.EdgeCloudZone(
+                    **edge_cloud_zone
+                )  # Validate against CAMARA EdgeCloudZone schema
+
+        # Validate APP_ID is consistent
+        if "APP_ID" in config:
+            app_id = config["APP_ID"]
+            camara_schemas.AppId(root=app_id)
+
+            # Check consistency between APP_ID and manifest/payload
+            if "APP_ONBOARD_MANIFEST" in config:
+                assert config["APP_ONBOARD_MANIFEST"]["appId"] == app_id
+            if "APP_DEPLOY_PAYLOAD" in config:
+                assert config["APP_DEPLOY_PAYLOAD"]["appId"] == app_id
+
+    except Exception as e:
+        pytest.fail(
+            f"Configuration is not CAMARA-compliant for {edgecloud_client.client_name}: {e}"
+        )
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_get_edge_cloud_zones(edgecloud_client):
     try:
         response = edgecloud_client.get_edge_cloud_zones()
@@ -105,56 +155,69 @@ def test_onboard_app(edgecloud_client):
         pytest.fail(f"Unexpected error during app onboarding: {e}")
 
 
-# @pytest.fixture(scope="module")
-# def app_instance_id(edgecloud_client):
-#     config = CONFIG[edgecloud_client.client_name]
-#     try:
-#         if edgecloud_client.client_name == "kubernetes":
-#             output = edgecloud_client.deploy_app(config["K8S_DEPLOY_PAYLOAD"])
-#         else:
-#             output = edgecloud_client.deploy_app(config["APP_ID"], config["APP_ZONES"])
+@pytest.fixture(scope="module")
+def app_instance_id(edgecloud_client):
+    config = CONFIG[edgecloud_client.client_name]
+    try:
+        # Use standardized CAMARA structure for all adapters
+        deploy_payload = config["APP_DEPLOY_PAYLOAD"]
+        app_id = deploy_payload["appId"]
+        app_zones = deploy_payload["appZones"]
+        response = edgecloud_client.deploy_app(app_id, app_zones)
 
-#         if edgecloud_client.client_name == "i2edge":
-#             app_instance_id = output.get("deploy_name")
-#         else:
-#             app_instance_id = output.get("appInstanceId")
+        assert isinstance(response, Response)
 
-#         assert app_instance_id is not None
-#         yield app_instance_id
-#     finally:
-#         pass
+        # All CAMARA-compliant adapters should return 202 for async deployment
+        assert response.status_code == 202
 
+        response_data = response.json()
 
-# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-# def test_deploy_app(app_instance_id):
-#     assert app_instance_id is not None
+        # CAMARA spec: response contains appInstances array
+        assert "appInstances" in response_data
+        assert isinstance(response_data["appInstances"], list)
+        assert len(response_data["appInstances"]) > 0
 
+        # Extract appInstanceId from first instance
+        app_instance_id = response_data["appInstances"][0].get("appInstanceId")
 
-# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-# def test_timer_wait_10_seconds(edgecloud_client):
-#     time.sleep(10)
-
-
-# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-# def test_undeploy_app(edgecloud_client, app_instance_id):
-#     try:
-#         edgecloud_client.undeploy_app(app_instance_id)
-#     except EdgeCloudPlatformError as e:
-#         pytest.fail(f"App undeployment failed: {e}")
+        assert app_instance_id is not None
+        yield app_instance_id
+    finally:
+        pass
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_timer_wait_3_seconds(edgecloud_client):
-    time.sleep(3)
+def test_deploy_app(app_instance_id):
+    assert app_instance_id is not None
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_timer_wait_10_seconds(edgecloud_client):
+    time.sleep(10)
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_undeploy_app(edgecloud_client, app_instance_id):
+    try:
+        response = edgecloud_client.undeploy_app(app_instance_id)
+        assert isinstance(response, Response)
+        assert response.status_code == 204
+        assert response.text == ""
+    except EdgeCloudPlatformError as e:
+        pytest.fail(f"App undeployment failed: {e}")
+
+
+# @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+# def test_timer_wait_5_seconds(edgecloud_client):
+#     time.sleep(5)
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_delete_onboarded_app(edgecloud_client):
     config = CONFIG[edgecloud_client.client_name]
     try:
-        edgecloud_client.delete_onboarded_app(
-            app_id=config["APP_ONBOARD_MANIFEST"]["appId"]
-        )
+        app_id = config["APP_ID"]
+        edgecloud_client.delete_onboarded_app(app_id=app_id)
     except EdgeCloudPlatformError as e:
         pytest.fail(f"App onboarding deletion failed: {e}")
 
