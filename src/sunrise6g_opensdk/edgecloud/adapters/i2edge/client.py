@@ -56,6 +56,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
     ) -> Response:
+        """
+        Retrieves a list of available Edge Cloud Zones.
+
+        :param region: Filter by geographical region.
+        :param status: Filter by status (active, inactive, unknown).
+        :return: Response with list of Edge Cloud Zones in CAMARA format.
+        """
         url = f"{self.base_url}/zones/list"
         params = {}
 
@@ -113,6 +120,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         token: Optional[str] = None,
         user_name: Optional[str] = None,
     ):
+        """
+        Creates an artefact in the i2Edge platform.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier for the artefact
+        :param artefact_name: Name of the artefact
+        :param repo_name: Repository name
+        :param repo_type: Type of repository (PUBLICREPO, PRIVATEREPO)
+        :param repo_url: Repository URL
+        :param password: Optional repository password
+        :param token: Optional repository token
+        :param user_name: Optional repository username
+        :return: Response confirming artefact creation
+        """
         repo_type = i2edge_schemas.RepoType(repo_type)
         url = "{}/artefact".format(self.base_url)
         payload = i2edge_schemas.ArtefactOnboarding(
@@ -136,6 +157,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise e
 
     def get_artefact(self, artefact_id: str) -> Dict:
+        """
+        Retrieves details about a specific artefact.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier of the artefact
+        :return: Dictionary with artefact details
+        """
         url = "{}/artefact/{}".format(self.base_url, artefact_id)
         try:
             response = i2edge_get(url, artefact_id)
@@ -148,6 +176,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise e
 
     def get_all_artefacts(self) -> List[Dict]:
+        """
+        Retrieves a list of all artefacts.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :return: List of artefact details
+        """
         url = "{}/artefacts".format(self.base_url)
         try:
             response = i2edge_get(url, {})
@@ -160,6 +194,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise e
 
     def delete_artefact(self, artefact_id: str):
+        """
+        Deletes a specific artefact from the i2Edge platform.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier of the artefact to delete
+        :return: Response confirming artefact deletion
+        """
         url = "{}/artefact".format(self.base_url)
         try:
             response = i2edge_delete(url, artefact_id)
@@ -460,6 +501,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise
 
     def get_all_deployed_apps(self) -> List[Dict]:
+        """
+        Retrieves information of all application instances.
+
+        :return: List of application instance details
+        """
         url = "{}/application_instances".format(self.base_url)
         params = {}
         try:
@@ -473,6 +519,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise e
 
     def get_deployed_app(self, app_id, zone_id) -> List[Dict]:
+        """
+        Retrieves a specific deployed application instance by app ID and zone ID.
+
+        :param app_id: Unique identifier of the application
+        :param zone_id: Unique identifier of the Edge Cloud Zone
+        :return: Application instance details or None if not found
+        """
         # Logic: Get all onboarded apps and filter the one where release_name == artifact name
 
         # Step 1) Extract "app_name" from the onboarded app using the "app_id"
@@ -545,6 +598,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     # --------------------------------------------------------------------
 
     def get_edge_cloud_zones_list_gsma(self) -> List:
+        """
+        Retrieves details of all Zones for GSMA federation.
+
+        :return: List of zone details in GSMA format
+        """
         url = "{}/zones/list".format(self.base_url)
         params = {}
         try:
@@ -572,6 +630,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise e
 
     def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> Dict:
+        """
+        Retrieves details of Zones for GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context
+        :return: Dictionary with zone details in GSMA format
+        """
         url = "{}/zones".format(self.base_url)
         params = {}
         try:
@@ -614,6 +678,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def availability_zone_info_gsma(
         self, federation_context_id: str, request_body: dict
     ) -> Dict:
+        """
+        Originating OP informs partner OP that it is willing to access
+        the specified zones and partner OP shall reserve compute and
+        network resources for these zones.
+
+        :param federation_context_id: Identifier of the federation context
+        :param request_body: Payload with zone resource information
+        :return: Dictionary with accepted zone resource info
+        """
         url = "{}/zones".format(self.base_url)
         params = {}
         try:
@@ -635,6 +708,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def get_edge_cloud_zone_details_gsma(
         self, federation_context_id: str, zone_id: str
     ) -> Dict:
+        """
+        Retrieves details of a specific Edge Cloud Zone reserved
+        for the specified zone by the partner OP.
+
+        :param federation_context_id: Identifier of the federation context
+        :param zone_id: Unique identifier of the Edge Cloud Zone
+        :return: Dictionary with Edge Cloud Zone details
+        """
         url = "{}/zone/{}".format(self.base_url, zone_id)
         params = {}
         try:
@@ -674,6 +755,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def create_artefact_gsma(
         self, federation_context_id: str, request_body: Dict
     ) -> Dict:
+        """
+        Uploads application artefact on partner OP. Artefact is a zip file
+        containing scripts and/or packaging files like Terraform or Helm
+        which are required to create an instance of an application
+
+        :param federation_context_id: Identifier of the federation context
+        :param request_body: Payload with artefact information
+        :return: Dictionary with artefact deployment info
+        """
         try:
             artefact_id = request_body["artefactId"]
             artefact_name = request_body["artefactName"]
@@ -705,6 +795,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise I2EdgeError(f"Missing required field in GSMA artefact payload: {e}")
 
     def get_artefact_gsma(self, federation_context_id: str, artefact_id: str) -> Dict:
+        """
+        Retrieves details about an artefact
+
+        :param federation_context_id: Identifier of the federation context
+        :param artefact_id: Unique identifier of the artefact
+        :return: Dictionary with artefact details
+        """
         try:
             response = self.get_artefact(artefact_id)
             if response.status_code == 200:
@@ -741,6 +838,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
 
     def delete_artefact_gsma(self, federation_context_id: str, artefact_id: str):
+        """
+        Removes an artefact from partners OP.
+
+        :param federation_context_id: Identifier of the federation context
+        :param artefact_id: Unique identifier of the artefact
+        :return: Dictionary with artefact deletion details
+        """
         try:
             response = self.delete_artefact(artefact_id)
             if response.status_code == 200:
@@ -763,6 +867,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def onboard_app_gsma(
         self, federation_context_id: str, request_body: dict
     ) -> Response:
+        """
+        Submits an application details to a partner OP.
+        Based on the details provided, partner OP shall do bookkeeping,
+        resource validation and other pre-deployment operations.
+
+        :param federation_context_id: Identifier of the federation context
+        :param request_body: Payload with onboarding info
+        :return: Dictionary with onboarding details
+        """
         body = deepcopy(request_body)
         try:
             body["app_id"] = body.pop("appId")
@@ -785,6 +898,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise I2EdgeError(f"Missing required field in GSMA onboarding payload: {e}")
 
     def get_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Dict:
+        """
+        Retrieves application details from partner OP
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Identifier of the application onboarded
+        :return: Dictionary with application details
+        """
         try:
             response = self.get_onboarded_app(app_id)
             if response.status_code == 200:
@@ -813,9 +933,25 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def patch_onboarded_app_gsma(
         self, federation_context_id: str, app_id: str, request_body: dict
     ) -> Dict:
+        """
+        Updates partner OP about changes in application compute resource requirements,
+        QOS Profile, associated descriptor or change in associated components
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Identifier of the application onboarded
+        :param request_body: Payload with updated application details
+        :return: Dictionary with update confirmation
+        """
         pass
 
     def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str):
+        """
+        Deletes an application onboarded from the Edge Cloud Provider.
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Unique identifier of the application
+        :return: Dictionary with deletion confirmation
+        """
         try:
             response = self.delete_onboarded_app(app_id)
             if response.status_code == 200:
@@ -838,6 +974,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def deploy_app_gsma(
         self, federation_context_id: str, idempotency_key: str, request_body: dict
     ):
+        """
+        Requests the instantiation of an application instance on partner OP.
+
+        :param federation_context_id: Identifier of the federation context
+        :param idempotency_key: Key to ensure idempotent operation
+        :param request_body: Payload with deployment information
+        :return: Dictionary with deployment details
+        """
         body = deepcopy(request_body)
         try:
             zone_id = body.get("zoneInfo").get("zoneId")
@@ -878,6 +1022,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         app_instance_id: str,
         zone_id: str,
     ):
+        """
+        Retrieves information about a specific deployed application instance.
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Unique identifier of the application
+        :param app_instance_id: Unique identifier of the application instance
+        :param zone_id: Unique identifier of the Edge Cloud Zone
+        :return: Dictionary with application instance details
+        """
         try:
             url = "{}/application_instance/{}/{}".format(
                 self.base_url, zone_id, app_instance_id
@@ -908,6 +1061,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         app_id: str,
         app_provider: str,
     ):
+        """
+        Retrieves information of all application instances for a specific app and provider.
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Unique identifier of the application
+        :param app_provider: Application provider identifier
+        :return: List of application instance details
+        """
         try:
             url = "{}/application_instances".format(self.base_url)
             params = {}
@@ -949,6 +1110,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         app_instance_id: str,
         zone_id: str,
     ):
+        """
+        Terminates a specific application instance on partner OP.
+
+        :param federation_context_id: Identifier of the federation context
+        :param app_id: Unique identifier of the application
+        :param app_instance_id: Unique identifier of the application instance
+        :param zone_id: Unique identifier of the Edge Cloud Zone
+        :return: Dictionary with termination confirmation
+        """
         try:
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_delete(url, app_instance_id)
