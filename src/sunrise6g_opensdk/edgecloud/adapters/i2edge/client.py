@@ -482,7 +482,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 "token": repo_data.get("token"),
             }
 
-            response = self._create_artefact(**transformed)
+            response = self.create_artefact(**transformed)
             if response.status_code == 201:
                 return self.build_custom_http_response(
                     status_code=200,
@@ -498,7 +498,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def get_artefact_gsma(self, federation_context_id: str, artefact_id: str) -> Dict:
         try:
-            response = self._get_artefact(artefact_id)
+            response = self.get_artefact(artefact_id)
             if response.status_code == 200:
                 response_json = response.json()
                 print(response_json)
@@ -534,7 +534,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def delete_artefact_gsma(self, federation_context_id: str, artefact_id: str):
         try:
-            response = self._delete_artefact(artefact_id)
+            response = self.delete_artefact(artefact_id)
             if response.status_code == 200:
                 return self.build_custom_http_response(
                     status_code=200,
