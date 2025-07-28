@@ -42,7 +42,7 @@ def i2edge_post(url: str, model_payload: BaseModel) -> dict:
         "Content-Type": "application/json",
         "accept": "application/json",
     }
-    json_payload = json.dumps(model_payload.model_dump(mode="json"))
+    json_payload = json.dumps(model_payload.model_dump(mode="json", exclude_none=True))
     try:
         response = requests.post(url, data=json_payload, headers=headers)
         response.raise_for_status()
