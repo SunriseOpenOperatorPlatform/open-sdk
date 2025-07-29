@@ -135,6 +135,17 @@ class EdgeCloudManagementInterface(ABC):
     @abstractmethod
     def get_edge_cloud_zones_list_gsma(self) -> List:
         """
+        Retrieves list of all Zones
+
+        :return: List.
+        """
+        pass
+
+    # AvailabilityZoneInfoSynchronization
+
+    @abstractmethod
+    def get_edge_cloud_zones_gsma(self) -> List:
+        """
         Retrieves details of all Zones
 
         :return: List.
@@ -142,43 +153,11 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     @abstractmethod
-    def get_edge_cloud_zones_gsma(self, federation_context_id: str) -> List:
-        """
-        Retrieves details of Zones
-
-        :param federation_context_id: Identifier of the federation context.
-        :return: List.
-        """
-        pass
-
-    # --------------------------------------------------------------------
-    # Availability Zone Info Synchronization (GSMA)
-    # --------------------------------------------------------------------
-
-    @abstractmethod
-    def availability_zone_info_gsma(
-        self, federation_context_id: str, request_body: dict
-    ) -> Dict:
-        """
-        Originating OP informs partner OP that it is willing to access
-        the specified zones and partner OP shall reserve compute and
-        network resources for these zones.
-
-        :param federation_context_id: Identifier of the federation context.
-        :param request_body: Payload.
-        :return:
-        """
-        pass
-
-    @abstractmethod
-    def get_edge_cloud_zone_details_gsma(
-        self, federation_context_id: str, zone_id: str
-    ) -> Dict:
+    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Dict:
         """
         Retrieves details of a specific Edge Cloud Zone reserved
         for the specified zone by the partner OP.
 
-        :param federation_context_id: Identifier of the federation context.
         :param zone_id: Unique identifier of the Edge Cloud Zone.
         :return: Dictionary with Edge Cloud Zone details.
         """
@@ -189,39 +168,32 @@ class EdgeCloudManagementInterface(ABC):
     # --------------------------------------------------------------------
 
     @abstractmethod
-    def create_artefact_gsma(
-        self, federation_context_id: str, request_body: dict
-    ) -> Dict:
+    def create_artefact_gsma(self, request_body: dict):
         """
         Create Artefact.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param request_body: Payload containing artefact details.
-        :return: Dictionary with created artefact details.
+        :param request_body: Payload with artefact information.
+        :return:
         """
         pass
 
     @abstractmethod
-    def get_artefact_gsma(self, federation_context_id: str, artefact_id: str) -> Dict:
+    def get_artefact_gsma(self, artefact_id: str) -> Dict:
         """
         Get Artefact.
 
-        :param federation_context_id: Identifier of the federation context.
         :param artefact_id: Unique identifier of the artefact.
         :return: Dictionary with artefact details.
         """
         pass
 
     @abstractmethod
-    def delete_artefact_gsma(
-        self, federation_context_id: str, artefact_id: str
-    ) -> Dict:
+    def delete_artefact_gsma(self, artefact_id: str):
         """
         Delete Artefact.
 
-        :param federation_context_id: Identifier of the federation context.
         :param artefact_id: Unique identifier of the artefact.
-        :return: Dictionary with deletion confirmation.
+        :return:
         """
         pass
 
@@ -230,119 +202,89 @@ class EdgeCloudManagementInterface(ABC):
     # --------------------------------------------------------------------
 
     @abstractmethod
-    def onboard_app_gsma(self, federation_context_id: str, request_body: dict) -> Dict:
+    def onboard_app_gsma(self, request_body: dict):
         """
         Create onboarded Application.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param request_body: Payload containing application onboarding details.
-        :return: Dictionary with onboarded application details.
+        :param request_body: Payload with onboarding info.
+        :return:
         """
         pass
 
     @abstractmethod
-    def get_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Dict:
+    def get_onboarded_app_gsma(self, app_id: str) -> Dict:
         """
         Get onboarded Application.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the onboarded application.
-        :return: Dictionary with onboarded application details.
+        :param app_id: Identifier of the application onboarded.
+        :return: Dictionary with application details.
         """
         pass
 
     @abstractmethod
-    def patch_onboarded_app_gsma(
-        self,
-        federation_context_id: str,
-        app_id: str,
-        request_body: dict,
-    ) -> Dict:
+    def patch_onboarded_app_gsma(self, app_id: str, request_body: dict):
         """
         Patch onboarded Application.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the onboarded application.
-        :param request_body: Payload containing patch details.
-        :return: Dictionary with updated application details.
+        :param app_id: Identifier of the application onboarded.
+        :param request_body: Payload with updated onboarding info.
+        :return:
         """
         pass
 
     @abstractmethod
-    def delete_onboarded_app_gsma(
-        self, federation_context_id: str, app_id: str
-    ) -> Dict:
+    def delete_onboarded_app_gsma(self, app_id: str):
         """
         Delete onboarded Application.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the onboarded application.
-        :return: Dictionary with deletion confirmation.
+        :param app_id: Identifier of the application onboarded.
+        :return:
         """
         pass
 
     @abstractmethod
-    def deploy_app_gsma(self, federation_context_id: str, request_body: dict) -> Dict:
+    def deploy_app_gsma(self, request_body: dict) -> Dict:
         """
         Create deployed Application.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param request_body: Payload containing application deployment details.
-        :return: Dictionary with deployed application details.
+        :param request_body: Payload with deployment info.
+        :return: Dictionary with deployment details.
         """
         pass
 
     @abstractmethod
     def get_deployed_app_gsma(
-        self,
-        federation_context_id: str,
-        app_id: str,
-        app_instance_id: str,
-        zone_id: str,
+        self, app_id: str, app_instance_id: str, zone_id: str
     ) -> Dict:
         """
         Retrieves an application instance details from partner OP.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the application.
-        :param app_instance_id: Unique identifier of the application instance.
-        :param zone_id: Unique identifier of the Edge Cloud Zone.
-        :return: Dictionary with deployed application details.
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed instance.
+        :param zone_id: Identifier of the zone
+        :return: Dictionary with application instance details
         """
         pass
 
     @abstractmethod
-    def get_all_deployed_apps_gsma(
-        self,
-        federation_context_id: str,
-        app_id: str,
-        app_provider_id: str,
-    ) -> Dict:
+    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> List:
         """
-        Retrieves all application instances of partner OP.
+        Retrieves all instances for a given application of partner OP
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the application.
-        :param app_provider_id: Unique identifier of the application provider.
-        :return: Dictionary with all deployed applications.
+        :param app_id: Identifier of the app.
+        :param app_provider: App provider
+        :return: List with application instances details
         """
         pass
 
     @abstractmethod
-    def undeploy_app_gsma(
-        self,
-        federation_context_id: str,
-        app_id: str,
-        app_instance_id: str,
-        zone_id: str,
-    ) -> Dict:
+    def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str):
         """
         Terminate an application instance on a partner OP zone.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param app_id: Unique identifier of the application.
-        :param app_instance_id: Unique identifier of the application instance.
-        :param zone_id: Unique identifier of the Edge Cloud Zone.
-        :return: Dictionary with undeployment confirmation.
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed app.
+        :param zone_id: Identifier of the zone
+        :return:
         """
         pass
