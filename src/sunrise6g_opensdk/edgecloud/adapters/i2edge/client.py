@@ -522,9 +522,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 appVersion=body.get("appVersion"),
                 zoneInfo=schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
             )
-            payload = schemas.AppDeploy(
-                app_deploy_data=app_deploy_data
-            )
+            payload = schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_post(url, payload)
             if response.status_code == 202:
@@ -545,7 +543,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA deployment payload: {e}")
 
-    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Dict:
+    def get_deployed_app_gsma(
+        self, app_id: str, app_instance_id: str, zone_id: str
+    ) -> Dict:
         try:
             url = "{}/application_instance/{}/{}".format(
                 self.base_url, zone_id, app_instance_id
@@ -605,7 +605,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Error retrieving apps: {e}")
 
-    def undeploy_app_gsma(self, app_instance_id: str) -> Response:
+    def undeploy_app_gsma(
+        self, app_id: str, app_instance_id: str, zone_id: str
+    ) -> Response:
         try:
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_delete(url, app_instance_id)

@@ -12,7 +12,6 @@ from typing import Optional, Union
 from uuid import UUID
 
 from src.edgecloud import logger
-
 from sunrise6g_opensdk.edgecloud.api.routers.lcm.schemas import RequiredResources
 from sunrise6g_opensdk.edgecloud.core import utils as core_utils
 

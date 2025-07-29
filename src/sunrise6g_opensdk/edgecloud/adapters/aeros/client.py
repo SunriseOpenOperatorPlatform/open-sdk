@@ -548,7 +548,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         pass
 
-    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Dict:
+    def get_deployed_app_gsma(
+        self, app_id: str, app_instance_id: str, zone_id: str
+    ) -> Dict:
         """
         Retrieves an application instance details from partner OP.
 
