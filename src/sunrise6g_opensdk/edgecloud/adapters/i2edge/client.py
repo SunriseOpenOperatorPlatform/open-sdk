@@ -255,9 +255,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             # Call i2Edge API
             i2edge_response = i2edge_post(
                 f"{self.base_url}/application/onboarding",
-                model_payload=i2edge_payload.model_dump(
-                    mode="json", exclude_defaults=True
-                ),
+                model_payload=i2edge_payload,
             )
             # OpenAPI specifies 201 for successful application onboarding
             if i2edge_response.status_code == 201:
