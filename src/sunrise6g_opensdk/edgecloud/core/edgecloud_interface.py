@@ -144,22 +144,22 @@ class EdgeCloudManagementInterface(ABC):
     # AvailabilityZoneInfoSynchronization
 
     @abstractmethod
-    def get_edge_cloud_zones_gsma(self) -> List:
+    def get_edge_cloud_zones_gsma(self) -> Response:
         """
-        Retrieves details of all Zones
+        Retrieves details of all Zones with compute resources and flavours for GSMA federation.
 
-        :return: List.
+        :return: Response with zones and detailed resource information.
         """
         pass
 
     @abstractmethod
-    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Dict:
+    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Response:
         """
         Retrieves details of a specific Edge Cloud Zone reserved
-        for the specified zone by the partner OP.
+        for the specified zone by the partner OP using GSMA federation.
 
         :param zone_id: Unique identifier of the Edge Cloud Zone.
-        :return: Dictionary with Edge Cloud Zone details.
+        :return: Response with Edge Cloud Zone details.
         """
         pass
 
@@ -168,32 +168,34 @@ class EdgeCloudManagementInterface(ABC):
     # --------------------------------------------------------------------
 
     @abstractmethod
-    def create_artefact_gsma(self, request_body: dict):
+    def create_artefact_gsma(self, request_body: dict) -> Response:
         """
-        Create Artefact.
+        Uploads application artefact on partner OP using GSMA federation.
+        Artefact is a zip file containing scripts and/or packaging files
+        like Terraform or Helm which are required to create an instance of an application.
 
         :param request_body: Payload with artefact information.
-        :return:
+        :return: Response with artefact upload confirmation.
         """
         pass
 
     @abstractmethod
-    def get_artefact_gsma(self, artefact_id: str) -> Dict:
+    def get_artefact_gsma(self, artefact_id: str) -> Response:
         """
-        Get Artefact.
+        Retrieves details about an artefact from partner OP using GSMA federation.
 
         :param artefact_id: Unique identifier of the artefact.
-        :return: Dictionary with artefact details.
+        :return: Response with artefact details.
         """
         pass
 
     @abstractmethod
-    def delete_artefact_gsma(self, artefact_id: str):
+    def delete_artefact_gsma(self, artefact_id: str) -> Response:
         """
-        Delete Artefact.
+        Removes an artefact from partners OP using GSMA federation.
 
         :param artefact_id: Unique identifier of the artefact.
-        :return:
+        :return: Response with artefact deletion confirmation.
         """
         pass
 
@@ -202,43 +204,46 @@ class EdgeCloudManagementInterface(ABC):
     # --------------------------------------------------------------------
 
     @abstractmethod
-    def onboard_app_gsma(self, request_body: dict):
+    def onboard_app_gsma(self, request_body: dict) -> Response:
         """
-        Create onboarded Application.
+        Submits an application details to a partner OP using GSMA federation.
+        Based on the details provided, partner OP shall do bookkeeping,
+        resource validation and other pre-deployment operations.
 
         :param request_body: Payload with onboarding info.
-        :return:
+        :return: Response with onboarding confirmation.
         """
         pass
 
     @abstractmethod
-    def get_onboarded_app_gsma(self, app_id: str) -> Dict:
+    def get_onboarded_app_gsma(self, app_id: str) -> Response:
         """
-        Get onboarded Application.
+        Retrieves application details from partner OP using GSMA federation.
 
         :param app_id: Identifier of the application onboarded.
-        :return: Dictionary with application details.
+        :return: Response with application details.
         """
         pass
 
     @abstractmethod
-    def patch_onboarded_app_gsma(self, app_id: str, request_body: dict):
+    def patch_onboarded_app_gsma(self, app_id: str, request_body: dict) -> Response:
         """
-        Patch onboarded Application.
+        Updates partner OP about changes in application compute resource requirements,
+        QOS Profile, associated descriptor or change in associated components using GSMA federation.
 
         :param app_id: Identifier of the application onboarded.
         :param request_body: Payload with updated onboarding info.
-        :return:
+        :return: Response with update confirmation.
         """
         pass
 
     @abstractmethod
-    def delete_onboarded_app_gsma(self, app_id: str):
+    def delete_onboarded_app_gsma(self, app_id: str) -> Response:
         """
-        Delete onboarded Application.
+        Deboards an application from specific partner OP zones using GSMA federation.
 
         :param app_id: Identifier of the application onboarded.
-        :return:
+        :return: Response with deboarding confirmation.
         """
         pass
 

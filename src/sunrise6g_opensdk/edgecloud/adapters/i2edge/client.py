@@ -45,13 +45,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         self.content_type_gsma = "application/json"
         self.encoding_gsma = "utf-8"
 
-    # ====================================================================
+    # ########################################################################
     # CAMARA EDGE CLOUD MANAGEMENT API
-    # ====================================================================
+    # ########################################################################
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Edge Cloud Zone Management (CAMARA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
@@ -105,9 +105,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             log.error(f"Failed to retrieve edge cloud zones: {e}")
             raise
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Artefact Management (i2Edge-Specific, Non-CAMARA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def create_artefact(
         self,
@@ -208,9 +208,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Application Management (CAMARA-Compliant)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def onboard_app(self, app_manifest: Dict) -> Response:
         """
@@ -586,19 +586,19 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             log.error(f"Failed to undeploy app from i2Edge: {e}")
             raise
 
-    # ====================================================================
+    # ########################################################################
     # GSMA EDGE COMPUTING API (EWBI OPG) - FEDERATION
-    # ====================================================================
+    # ########################################################################
 
-    # --------------------------------------------------------------------
-    # Federation Management (GSMA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
+    # Zone Management (GSMA)
+    # ------------------------------------------------------------------------
 
-    def get_edge_cloud_zones_list_gsma(self) -> List:
+    def get_edge_cloud_zones_list_gsma(self) -> Response:
         """
         Retrieves details of all Zones for GSMA federation.
 
-        :return: List of zone details in GSMA format
+        :return: Response with zone details in GSMA format.
         """
         url = "{}/zones/list".format(self.base_url)
         params = {}
@@ -626,9 +626,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    # AvailabilityZoneInfoSynchronization
+    def get_edge_cloud_zones_gsma(self) -> Response:
+        """
+        Retrieves details of all Zones with compute resources and flavours for GSMA federation.
 
-    def get_edge_cloud_zones_gsma(self) -> Dict:
+        :return: Response with zones and detailed resource information.
+        """
         url = "{}/zones".format(self.base_url)
         params = {}
         try:
@@ -664,7 +667,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Dict:
+    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Response:
+        """
+        Retrieves details of a specific Edge Cloud Zone reserved
+        for the specified zone by the partner OP using GSMA federation.
+
+        :param zone_id: Unique identifier of the Edge Cloud Zone.
+        :return: Response with Edge Cloud Zone details.
+        """
         url = "{}/zone/{}".format(self.base_url, zone_id)
         params = {}
         try:
@@ -697,11 +707,19 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Artefact Management (GSMA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
-    def create_artefact_gsma(self, request_body: Dict) -> Dict:
+    def create_artefact_gsma(self, request_body: Dict) -> Response:
+        """
+        Uploads application artefact on partner OP using GSMA federation.
+        Artefact is a zip file containing scripts and/or packaging files like Terraform or Helm
+        which are required to create an instance of an application.
+
+        :param request_body: Payload with artefact information.
+        :return: Response with artefact upload confirmation.
+        """
         try:
             artefact_id = request_body["artefactId"]
             artefact_name = request_body["artefactName"]
@@ -732,7 +750,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA artefact payload: {e}")
 
-    def get_artefact_gsma(self, artefact_id: str) -> Dict:
+    def get_artefact_gsma(self, artefact_id: str) -> Response:
+        """
+        Retrieves details about an artefact from partner OP using GSMA federation.
+
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Response with artefact details.
+        """
         try:
             response = self.get_artefact(artefact_id)
             if response.status_code == 200:
@@ -769,6 +793,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
 
     def delete_artefact_gsma(self, artefact_id: str) -> Response:
+        """
+        Removes an artefact from partners OP.
+
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Response with artefact deletion confirmation.
+        """
         try:
             response = self.delete_artefact(artefact_id)
             if response.status_code == 200:
@@ -784,11 +814,19 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Application Onboarding Management (GSMA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def onboard_app_gsma(self, request_body: dict) -> Response:
+        """
+        Submits an application details to a partner OP.
+        Based on the details provided, partner OP shall do bookkeeping,
+        resource validation and other pre-deployment operations.
+
+        :param request_body: Payload with onboarding info.
+        :return: Response with onboarding confirmation.
+        """
         body = deepcopy(request_body)
         try:
             body["app_id"] = body.pop("appId")
@@ -810,7 +848,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA onboarding payload: {e}")
 
-    def get_onboarded_app_gsma(self, app_id: str) -> Dict:
+    def get_onboarded_app_gsma(self, app_id: str) -> Response:
+        """
+        Retrieves application details from partner OP using GSMA federation.
+
+        :param app_id: Identifier of the application onboarded.
+        :return: Response with application details.
+        """
         try:
             response = self.get_onboarded_app(app_id)
             if response.status_code == 200:
@@ -838,10 +882,28 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def patch_onboarded_app_gsma(
         self, federation_context_id: str, app_id: str, request_body: dict
-    ) -> Dict:
+    ) -> Response:
+        """
+        Updates partner OP about changes in application compute resource requirements,
+        QOS Profile, associated descriptor or change in associated components using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :param request_body: Payload with updated onboarding info.
+        :return: Response with update confirmation.
+        """
         pass
 
-    def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str):
+    def delete_onboarded_app_gsma(
+        self, federation_context_id: str, app_id: str
+    ) -> Response:
+        """
+        Deboards an application from specific partner OP zones using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :return: Response with deboarding confirmation.
+        """
         try:
             response = self.delete_onboarded_app(app_id)
             if response.status_code == 200:
@@ -857,13 +919,21 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
 
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # Application Deployment Management (GSMA)
-    # --------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def deploy_app_gsma(
         self, federation_context_id: str, idempotency_key: str, request_body: dict
-    ):
+    ) -> Response:
+        """
+        Instantiates an application on a partner OP zone using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param idempotency_key: Idempotency key for request deduplication.
+        :param request_body: Payload with deployment information.
+        :return: Response with deployment details.
+        """
         body = deepcopy(request_body)
         try:
             zone_id = body.get("zoneInfo").get("zoneId")
@@ -874,7 +944,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 appVersion=body.get("appVersion"),
                 zoneInfo=i2edge_schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
             )
-            payload = camara_schemas.AppDeploy(app_deploy_data=app_deploy_data)
+            payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_post(url, payload)
             if response.status_code == 202:
@@ -897,7 +967,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def get_deployed_app_gsma(
         self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Dict:
+    ) -> Response:
+        """
+        Retrieves an application instance details from partner OP using GSMA federation.
+
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed instance.
+        :param zone_id: Identifier of the zone.
+        :return: Response with application instance details.
+        """
         try:
             url = "{}/application_instance/{}/{}".format(
                 self.base_url, zone_id, app_instance_id
@@ -922,7 +1000,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId or zoneId in GSMA payload: {e}")
 
-    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Dict:
+    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Response:
+        """
+        Retrieves all instances for a given application of partner OP using GSMA federation.
+
+        :param app_id: Identifier of the app.
+        :param app_provider: App provider identifier.
+        :return: Response with application instances details.
+        """
         try:
             url = "{}/application_instances".format(self.base_url)
             params = {}
@@ -960,6 +1045,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     def undeploy_app_gsma(
         self, app_id: str, app_instance_id: str, zone_id: str
     ) -> Response:
+        """
+        Terminate an application instance on a partner OP zone.
+
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed app.
+        :param zone_id: Identifier of the zone.
+        :return: Response with termination confirmation.
+        """
         try:
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_delete(url, app_instance_id)
