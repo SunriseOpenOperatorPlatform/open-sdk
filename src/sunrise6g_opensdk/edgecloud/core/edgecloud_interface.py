@@ -42,7 +42,7 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     # --------------------------------------------------------------------
-    # Application Management (CAMARA-Compliant)
+    # Application Management (CAMARA)
     # --------------------------------------------------------------------
 
     @abstractmethod

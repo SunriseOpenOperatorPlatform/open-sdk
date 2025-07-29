@@ -110,7 +110,7 @@ def test_get_edge_cloud_zones(edgecloud_client):
         zones = response.json()
         assert isinstance(zones, list)
         for zone in zones:
-            camara_schemas.EdgeCloudZone(**zone)  # Validate against CAMARA model
+            camara_schemas.EdgeCloudZone(**zone)
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to retrieve zones: {e}")
     except Exception as e:
