@@ -19,9 +19,7 @@ class AppId(RootModel[UUID]):
     )
 
 
-# TODO: Update to AppInstanceId(RootModel[UUID])
-# As a temporary solution RootModel[str] will be used until i2Edge get's updated
-class AppInstanceId(RootModel[str]):
+class AppInstanceId(RootModel[UUID]):
     root: str = Field(
         ...,
         description="A globally unique identifier associated with a running\ninstance of an application.\nEdge Cloud Platform generates this identifier when the\ninstantiation in the Edge Cloud Zone is successful.\n",
