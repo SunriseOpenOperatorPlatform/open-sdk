@@ -141,8 +141,6 @@ class EdgeCloudManagementInterface(ABC):
         """
         pass
 
-    # AvailabilityZoneInfoSynchronization
-
     @abstractmethod
     def get_edge_cloud_zones_gsma(self) -> Response:
         """
