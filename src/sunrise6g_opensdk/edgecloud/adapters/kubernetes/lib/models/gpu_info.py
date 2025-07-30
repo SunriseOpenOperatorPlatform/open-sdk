@@ -58,9 +58,7 @@ class GpuInfo(Model):
         :type gpu_memory: int
         """
         if gpu_memory is None:
-            raise ValueError(
-                "Invalid value for `gpu_memory`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `gpu_memory`, must not be `None`")  # noqa: E501
 
         self._gpu_memory = gpu_memory
 
@@ -85,8 +83,6 @@ class GpuInfo(Model):
         :type num_gpu: int
         """
         if num_gpu is None:
-            raise ValueError(
-                "Invalid value for `num_gpu`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `num_gpu`, must not be `None`")  # noqa: E501
 
         self._num_gpu = num_gpu

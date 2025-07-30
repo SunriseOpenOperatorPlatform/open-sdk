@@ -55,9 +55,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         app_name = app_manifest.get("name")
         image = app_manifest.get("appRepo").get("imagePath")
         package_type = app_manifest.get("packageType")
-        network_interfaces = app_manifest.get("componentSpec")[0].get(
-            "networkInterfaces"
-        )
+        network_interfaces = app_manifest.get("componentSpec")[0].get("networkInterfaces")
         ports = []
         for ni in network_interfaces:
             ports.append(ni.get("port"))
@@ -68,9 +66,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             service_function_type=package_type,
             application_ports=ports,
         )
-        result = self.connector_db.insert_document_service_function(
-            insert_doc.to_dict()
-        )
+        result = self.connector_db.insert_document_service_function(insert_doc.to_dict())
         if type(result) is str:
             return result
         return {"appId": str(result.inserted_id)}
@@ -87,9 +83,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         # return [{"appId": "1234-5678", "name": "TestApp"}]
 
     def get_onboarded_app(self, app_id: str) -> Dict:
-        logging.info(
-            "Searching for registered app with ID: " + app_id + " in database..."
-        )
+        logging.info("Searching for registered app with ID: " + app_id + " in database...")
         app = self.connector_db.get_documents_from_collection(
             "service_functions", input_type="_id", input_value=app_id
         )
@@ -105,9 +99,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def deploy_app(self, body: dict) -> Dict:
         logging.info(
-            "Searching for registered app with ID: "
-            + body.get("appId")
-            + " in database..."
+            "Searching for registered app with ID: " + body.get("appId") + " in database..."
         )
         app = self.connector_db.get_documents_from_collection(
             "service_functions", input_type="_id", input_value=body.get("appId")
@@ -150,9 +142,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         region: Optional[str] = None,
     ) -> List[Dict]:
         logging.info("Retrieving all deployed apps in the edge cloud platform")
-        deployments = self.k8s_connector.get_deployed_service_functions(
-            self.connector_db
-        )
+        deployments = self.k8s_connector.get_deployed_service_functions(self.connector_db)
         response = []
         for deployment in deployments:
             item = {}
@@ -173,9 +163,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         # return [{"appInstanceId": "abcd-efgh", "status": "ready"}]
 
     def undeploy_app(self, app_instance_id: str) -> None:
-        logging.info(
-            "Searching for deployed app with ID: " + app_instance_id + " in database..."
-        )
+        logging.info("Searching for deployed app with ID: " + app_instance_id + " in database...")
         print(f"Deleting app instance: {app_instance_id}")
         sfs = self.k8s_connector.get_deployed_service_functions(self.connector_db)
         response = "App instance with ID [" + app_instance_id + "] not found"
@@ -184,11 +172,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 self.k8s_connector.delete_service_function(
                     self.connector_db, service_fun["service_function_instance_name"]
                 )
-                response = (
-                    "App instance with ID ["
-                    + app_instance_id
-                    + "] successfully removed"
-                )
+                response = "App instance with ID [" + app_instance_id + "] successfully removed"
                 break
         return response
 
@@ -209,9 +193,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             zone_list.append(zone)
         return zone_list
 
-    def get_edge_cloud_zones_details(
-        self, zone_id: str, flavour_id: Optional[str] = None
-    ) -> Dict:
+    def get_edge_cloud_zones_details(self, zone_id: str, flavour_id: Optional[str] = None) -> Dict:
         nodes = self.k8s_connector.get_node_details()
         node_details = None
         for item in nodes.get("items"):
@@ -380,9 +362,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         pass
 
-    def get_deployed_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Dict:
+    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Dict:
         """
         Retrieves an application instance details from partner OP.
 

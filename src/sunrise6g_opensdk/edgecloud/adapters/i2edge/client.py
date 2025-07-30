@@ -7,18 +7,20 @@
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
 #   - César Cajas (cesar.cajas@i2cat.net)
 ##
-import json
 from copy import deepcopy
 from typing import Dict, List, Optional
 
+from pydantic import ValidationError
 from requests import Response
 
 from sunrise6g_opensdk import logger
+from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from sunrise6g_opensdk.edgecloud.core.edgecloud_interface import (
     EdgeCloudManagementInterface,
 )
+from sunrise6g_opensdk.edgecloud.core.utils import build_custom_http_response
 
-from ...adapters.i2edge import schemas
+from ...adapters.i2edge import schemas as i2edge_schemas
 from .common import (
     I2EdgeError,
     i2edge_delete,
@@ -41,31 +43,67 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         self.content_type_gsma = "application/json"
         self.encoding_gsma = "utf-8"
 
+    # ########################################################################
+    # CAMARA EDGE CLOUD MANAGEMENT API
+    # ########################################################################
+
+    # ------------------------------------------------------------------------
+    # Edge Cloud Zone Management (CAMARA)
+    # ------------------------------------------------------------------------
+
     def get_edge_cloud_zones(
         self, region: Optional[str] = None, status: Optional[str] = None
-    ) -> list[dict]:
-        url = "{}/zones/list".format(self.base_url)
+    ) -> Response:
+        """
+        Retrieves a list of available Edge Cloud Zones.
+
+        :param region: Filter by geographical region.
+        :param status: Filter by status (active, inactive, unknown).
+        :return: Response with list of Edge Cloud Zones in CAMARA format.
+        """
+        url = f"{self.base_url}/zones/list"
         params = {}
+
         try:
             response = i2edge_get(url, params=params)
-            log.info("Availability zones retrieved successfully")
+            if response.status_code == 200:
+                response.raise_for_status()
+                i2edge_response = response.json()
+                log.info("Availability zones retrieved successfully")
+                # Normalise to CAMARA format
+                camara_response = []
+                for z in i2edge_response:
+                    zone = camara_schemas.EdgeCloudZone(
+                        # edgeCloudZoneId = camara_schemas.EdgeCloudZoneId(z["zoneId"]),
+                        edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(z["zoneId"]),
+                        edgeCloudZoneName=camara_schemas.EdgeCloudZoneName(z["nodeName"]),
+                        edgeCloudProvider=camara_schemas.EdgeCloudProvider("i2edge"),
+                        edgeCloudRegion=camara_schemas.EdgeCloudRegion(z["geographyDetails"]),
+                        edgeCloudZoneStatus=camara_schemas.EdgeCloudZoneStatus.unknown,
+                    )
+                    camara_response.append(zone)
+                # Wrap into a Response object
+                return build_custom_http_response(
+                    status_code=response.status_code,
+                    content=[zone.model_dump(mode="json") for zone in camara_response],
+                    headers={"Content-Type": "application/json"},
+                    encoding=response.encoding,
+                    url=response.url,
+                    request=response.request,
+                )
             return response
+        except KeyError as e:
+            log.error(f"Missing required CAMARA field in app manifest: {e}")
+            raise ValueError(f"Invalid CAMARA manifest – missing field: {e}")
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to retrieve edge cloud zones: {e}")
+            raise
 
-    def get_edge_cloud_zones_details(
-        self, zone_id: str, flavour_id: Optional[str] = None
-    ) -> Dict:
-        url = "{}zone/{}".format(self.base_url, zone_id)
-        params = {}
-        try:
-            response = i2edge_get(url, params=params)
-            log.info("Availability zone details retrieved successfully")
-            return response
-        except I2EdgeError as e:
-            raise e
+    # ------------------------------------------------------------------------
+    # Artefact Management (i2Edge-Specific, Non-CAMARA)
+    # ------------------------------------------------------------------------
 
-    def _create_artefact(
+    def create_artefact(
         self,
         artefact_id: str,
         artefact_name: str,
@@ -76,9 +114,23 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         token: Optional[str] = None,
         user_name: Optional[str] = None,
     ):
-        repo_type = schemas.RepoType(repo_type)
+        """
+        Creates an artefact in the i2Edge platform.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier for the artefact
+        :param artefact_name: Name of the artefact
+        :param repo_name: Repository name
+        :param repo_type: Type of repository (PUBLICREPO, PRIVATEREPO)
+        :param repo_url: Repository URL
+        :param password: Optional repository password
+        :param token: Optional repository token
+        :param user_name: Optional repository username
+        :return: Response confirming artefact creation
+        """
+        repo_type = i2edge_schemas.RepoType(repo_type)
         url = "{}/artefact".format(self.base_url)
-        payload = schemas.ArtefactOnboarding(
+        payload = i2edge_schemas.ArtefactOnboarding(
             artefact_id=artefact_id,
             name=artefact_name,
             repo_password=password,
@@ -90,12 +142,22 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         )
         try:
             response = i2edge_post_multiform_data(url, payload)
-            log.info("Artifact added successfully")
+            if response.status_code == 201:
+                response.raise_for_status()
+                log.info("Artifact added successfully")
+                return response
             return response
         except I2EdgeError as e:
             raise e
 
-    def _get_artefact(self, artefact_id: str) -> Dict:
+    def get_artefact(self, artefact_id: str) -> Dict:
+        """
+        Retrieves details about a specific artefact.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier of the artefact
+        :return: Dictionary with artefact details
+        """
         url = "{}/artefact/{}".format(self.base_url, artefact_id)
         params = {}
         try:
@@ -105,7 +167,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def _get_all_artefacts(self) -> List[Dict]:
+    def get_all_artefacts(self) -> List[Dict]:
+        """
+        Retrieves a list of all artefacts.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :return: List of artefact details
+        """
         url = "{}/artefact".format(self.base_url)
         params = {}
         try:
@@ -115,110 +183,350 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def _delete_artefact(self, artefact_id: str):
+    def delete_artefact(self, artefact_id: str):
+        """
+        Deletes a specific artefact from the i2Edge platform.
+        This is an i2Edge-specific operation not covered by CAMARA standards.
+
+        :param artefact_id: Unique identifier of the artefact to delete
+        :return: Response confirming artefact deletion
+        """
         url = "{}/artefact".format(self.base_url)
         try:
             response = i2edge_delete(url, artefact_id)
-            log.info("Artifact deleted successfully")
+            if response.status_code == 200:
+                response.raise_for_status()
+                log.info("Artifact deleted successfully")
+                return response
             return response
         except I2EdgeError as e:
             raise e
 
-    def onboard_app(self, app_manifest: Dict) -> Dict:
+    # ------------------------------------------------------------------------
+    # Application Management (CAMARA-Compliant)
+    # ------------------------------------------------------------------------
+
+    def onboard_app(self, app_manifest: Dict) -> Response:
+        """
+        Onboards an application using a CAMARA-compliant manifest.
+        Translates the manifest to the i2Edge format and returns a CAMARA-compliant response.
+
+        :param app_manifest: CAMARA-compliant application manifest
+        :return: Response with status code, headers, and CAMARA-normalised payload
+        """
         try:
+            # Validate CAMARA input
+            camara_schemas.AppManifest(**app_manifest)
+
+            # Extract relevant fields from CAMARA manifest
             app_id = app_manifest["appId"]
+            app_name = app_manifest["name"]
+            app_version = app_manifest["version"]
+            app_provider = app_manifest["appProvider"]
+
+            # Map CAMARA to i2Edge
             artefact_id = app_id
-
-            app_component_spec = schemas.AppComponentSpec(artefactId=artefact_id)
-            data = schemas.ApplicationOnboardingData(
-                app_id=app_id, appComponentSpecs=[app_component_spec]
+            app_component_spec = i2edge_schemas.AppComponentSpec(artefactId=artefact_id)
+            app_metadata = i2edge_schemas.AppMetaData(
+                appName=app_name, appProviderId=app_provider, version=app_version
             )
-            payload = schemas.ApplicationOnboardingRequest(profile_data=data)
-            url = "{}/application/onboarding".format(self.base_url)
-            response = i2edge_post(url, payload)
-            return response
-        except I2EdgeError as e:
-            raise e
-        except KeyError as e:
-            raise I2EdgeError("Missing required field in app_manifest: {}".format(e))
 
-    def delete_onboarded_app(self, app_id: str) -> None:
+            onboarding_data = i2edge_schemas.ApplicationOnboardingData(
+                app_id=app_id,
+                appProviderId=app_provider,
+                appComponentSpecs=[app_component_spec],
+                appMetaData=app_metadata,
+            )
+
+            i2edge_payload = i2edge_schemas.ApplicationOnboardingRequest(
+                profile_data=onboarding_data
+            )
+
+            # Call i2Edge API
+            i2edge_response = i2edge_post(
+                f"{self.base_url}/application/onboarding",
+                model_payload=i2edge_payload,
+            )
+            # OpenAPI specifies 201 for successful application onboarding
+            if i2edge_response.status_code == 201:
+                i2edge_response.raise_for_status()
+
+                # Build CAMARA-compliant response using schema
+                submitted_app = camara_schemas.SubmittedApp(appId=camara_schemas.AppId(app_id))
+
+                log.info("App onboarded successfully")
+                return build_custom_http_response(
+                    status_code=i2edge_response.status_code,
+                    content=submitted_app.model_dump(mode="json"),
+                    headers={"Content-Type": "application/json"},
+                    encoding="utf-8",
+                    url=i2edge_response.url,
+                    request=i2edge_response.request,
+                )
+            else:
+                i2edge_response.raise_for_status()
+        # TODO: Implement CAMARA-compliant error handling for failed onboarding responses
+        except ValidationError as e:
+            log.error(f"Invalid CAMARA manifest: {e}")
+            raise ValueError(f"Invalid CAMARA manifest: {e}")
+        except I2EdgeError as e:
+            log.error(f"Failed to onboard app to i2Edge: {e}")
+            raise
+
+    def delete_onboarded_app(self, app_id: str) -> Response:
+        """
+        Deletes an onboarded application using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response.
+
+        :param app_id: Unique identifier of the application
+        :return: Response with status code, headers, and CAMARA-normalised payload
+        """
         url = "{}/application/onboarding".format(self.base_url)
         try:
             response = i2edge_delete(url, app_id)
-            return response
-        except I2EdgeError as e:
-            raise e
+            response.raise_for_status()
 
-    def get_onboarded_app(self, app_id: str) -> Dict:
+            log.info("App onboarded deleted successfully")
+            return build_custom_http_response(
+                status_code=204,
+                content="",
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to delete onboarded app from i2Edge: {e}")
+            raise
+
+    def get_onboarded_app(self, app_id: str) -> Response:
+        """
+        Retrieves information of a specific onboarded application using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response.
+
+        :param app_id: Unique identifier of the application
+        :return: Response with application details in CAMARA format
+        """
         url = "{}/application/onboarding/{}".format(self.base_url, app_id)
         params = {}
         try:
             response = i2edge_get(url, params=params)
-            return response
-        except I2EdgeError as e:
-            raise e
+            response.raise_for_status()
+            i2edge_response = response.json()
 
-    def get_all_onboarded_apps(self) -> List[Dict]:
+            # Extract and transform i2Edge response to CAMARA format
+            profile_data = i2edge_response.get("profile_data", {})
+            app_metadata = profile_data.get("appMetaData", {})
+
+            # Build CAMARA-compliant response using schema
+            # Note: This is a partial AppManifest for get operation
+            app_manifest_response = {
+                "appManifest": {
+                    "appId": profile_data.get("app_id", app_id),
+                    "name": app_metadata.get("appName", ""),
+                    "version": app_metadata.get("version", ""),
+                    "appProvider": profile_data.get("appProviderId", ""),
+                    # Add other required fields with defaults if not available
+                    "packageType": "CONTAINER",  # Default value
+                    "appRepo": {"type": "PUBLICREPO", "imagePath": "not-available"},
+                    "requiredResources": {
+                        "infraKind": "kubernetes",
+                        "applicationResources": {},
+                        "isStandalone": False,
+                    },
+                    "componentSpec": [],
+                }
+            }
+
+            log.info("App retrieved successfully")
+            return build_custom_http_response(
+                status_code=response.status_code,
+                content=app_manifest_response,
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve onboarded app from i2Edge: {e}")
+            raise
+
+    def get_all_onboarded_apps(self) -> Response:
+        """
+        Retrieves a list of all onboarded applications using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response.
+
+        :return: Response with list of application metadata in CAMARA format
+        """
         url = "{}/applications/onboarding".format(self.base_url)
         params = {}
         try:
             response = i2edge_get(url, params=params)
-            return response
+            response.raise_for_status()
+            i2edge_response = response.json()
+
+            # Transform i2Edge response to CAMARA format using AppManifest schema
+            camara_apps = []
+            if isinstance(i2edge_response, list):
+                for app_data in i2edge_response:
+                    profile_data = app_data.get("profile_data", {})
+                    app_metadata = profile_data.get("appMetaData", {})
+
+                    # Build CAMARA AppManifest structure
+                    app_manifest = camara_schemas.AppManifest(
+                        appId=profile_data.get("app_id", ""),
+                        name=app_metadata.get("appName", ""),
+                        version=app_metadata.get("version", ""),
+                        appProvider=profile_data.get("appProviderId", ""),
+                        packageType="CONTAINER",
+                        appRepo={"type": "PUBLICREPO", "imagePath": "not-available"},
+                        requiredResources={
+                            "infraKind": "kubernetes",
+                            "applicationResources": {},
+                            "isStandalone": False,
+                        },
+                        componentSpec=[],
+                    )
+                    camara_apps.append(app_manifest.model_dump(mode="json"))
+
+            log.info("All onboarded apps retrieved successfully")
+            return build_custom_http_response(
+                status_code=response.status_code,
+                content=camara_apps,
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to retrieve all onboarded apps from i2Edge: {e}")
+            raise
 
     # def _select_best_flavour_for_app(self, zone_id) -> str:
     #     # list_of_flavours = self.get_edge_cloud_zones_details(zone_id)
     #     # <logic that select the best flavour>
     #     return flavourId
 
-    def deploy_app(self, app_id: str, app_zones: List[Dict]) -> Dict:
+    def deploy_app(self, app_id: str, app_zones: List[Dict]) -> Response:
+        """
+        Deploys an application using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response with deployment details.
+
+        :param app_id: Unique identifier of the application
+        :param app_zones: List of Edge Cloud Zones where the app should be deployed
+        :return: Response with deployment details in CAMARA format
+        """
         appId = app_id
-        app = self.get_onboarded_app(appId)
-        profile_data = app["profile_data"]
+
+        # Get onboarded app metadata for deployment
+        app_url = "{}/application/onboarding/{}".format(self.base_url, appId)
+        try:
+            app_response = i2edge_get(app_url, appId)
+            app_response.raise_for_status()
+            app_data = app_response.json()
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve app data for deployment: {e}")
+            raise
+
+        # Extract deployment parameters from app metadata and zones
+        profile_data = app_data["profile_data"]
         appProviderId = profile_data["appProviderId"]
         appVersion = profile_data["appMetaData"]["version"]
         zone_info = app_zones[0]["EdgeCloudZone"]
         zone_id = zone_info["edgeCloudZoneId"]
-        # TODO: atm the flavour id is specified as an input parameter
         # flavourId = self._select_best_flavour_for_app(zone_id=zone_id)
-        app_deploy_data = schemas.AppDeployData(
+
+        # Build deployment payload
+        app_deploy_data = i2edge_schemas.AppDeployData(
             appId=appId,
             appProviderId=appProviderId,
             appVersion=appVersion,
-            zoneInfo=schemas.ZoneInfo(flavourId=self.flavour_id, zoneId=zone_id),
+            zoneInfo=i2edge_schemas.ZoneInfoRef(flavourId=self.flavour_id, zoneId=zone_id),
         )
-        url = "{}/app/".format(self.base_url)
-        payload = schemas.AppDeploy(app_deploy_data=app_deploy_data)
+        url = "{}/application_instance".format(self.base_url)
+        payload = i2edge_schemas.AppDeploy(
+            app_deploy_data=app_deploy_data, app_parameters={"namespace": "test"}
+        )
+
+        # Deployment request to i2Edge
         try:
-            response = i2edge_post(url, payload)
-            log.info("App deployed successfully")
-            print(response)
-            return response
+            i2edge_response = i2edge_post(url, payload)
+            if i2edge_response.status_code == 202:
+                i2edge_response.raise_for_status()
+                i2edge_data = i2edge_response.json()
+
+                # Build CAMARA-compliant response
+                app_instance_id = i2edge_data.get("app_instance_id")
+
+                app_instance_info = camara_schemas.AppInstanceInfo(
+                    name=camara_schemas.AppInstanceName(app_instance_id),
+                    appId=camara_schemas.AppId(appId),
+                    appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
+                    appProvider=camara_schemas.AppProvider(appProviderId),
+                    status=camara_schemas.Status.instantiating,  # 202 means deployment is in progress
+                    edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(zone_id),
+                )
+
+                # CAMARA spec requires appInstances array wrapper
+                camara_response = {"appInstances": [app_instance_info.model_dump(mode="json")]}
+
+                log.info("App deployment request submitted successfully")
+                return build_custom_http_response(
+                    status_code=i2edge_response.status_code,
+                    content=camara_response,
+                    headers={"Content-Type": "application/json"},
+                    encoding="utf-8",
+                    url=i2edge_response.url,
+                    request=i2edge_response.request,
+                )
+            else:
+                i2edge_response.raise_for_status()
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to deploy app to i2Edge: {e}")
+            raise
 
     def get_all_deployed_apps(self) -> List[Dict]:
-        url = "{}/app/".format(self.base_url)
+        """
+        Retrieves information of all application instances.
+
+        :return: List of application instance details
+        """
+        url = "{}/application_instances".format(self.base_url)
         params = {}
         try:
             response = i2edge_get(url, params=params)
-            log.info("All app instances retrieved successfully")
+            if response.status_code == 200:
+                response.raise_for_status()
+                log.info("All app instances retrieved successfully")
+                return response.json()
             return response
         except I2EdgeError as e:
             raise e
 
     def get_deployed_app(self, app_id, zone_id) -> List[Dict]:
+        """
+        Retrieves a specific deployed application instance by app ID and zone ID.
+
+        :param app_id: Unique identifier of the application
+        :param zone_id: Unique identifier of the Edge Cloud Zone
+        :return: Application instance details or None if not found
+        """
         # Logic: Get all onboarded apps and filter the one where release_name == artifact name
 
         # Step 1) Extract "app_name" from the onboarded app using the "app_id"
-        onboarded_app = self.get_onboarded_app(app_id)
-        if not onboarded_app:
+        try:
+            onboarded_app_response = self.get_onboarded_app(app_id)
+            onboarded_app_response.raise_for_status()
+            onboarded_app_data = onboarded_app_response.json()
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve app data: {e}")
             raise ValueError(f"No onboarded app found with ID: {app_id}")
 
         try:
-            app_name = onboarded_app["profile_data"]["appMetaData"]["appName"]
+            # Extract app name from CAMARA response format
+            app_name = onboarded_app_data.get("name", "")
+            if not app_name:
+                raise KeyError("name")
         except KeyError as e:
             raise ValueError(f"Onboarded app missing required field: {e}")
 
@@ -236,28 +544,50 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 return app_instance_name
         return None
 
-        url = "{}/app/{}/{}".format(self.base_url, zone_id, app_instance_name)
-        params = {}
+    def undeploy_app(self, app_instance_id: str) -> Response:
+        """
+        Terminates a specific application instance using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response confirming termination.
+
+        :param app_instance_id: Unique identifier of the application instance
+        :return: Response confirming termination in CAMARA format (204 No Content)
+        """
+        url = "{}/application_instance".format(self.base_url)
         try:
-            response = i2edge_get(url, params=params)
-            log.info("App instance retrieved successfully")
-            return response
+            i2edge_response = i2edge_delete(url, app_instance_id)
+            if i2edge_response.status_code == 200:
+                i2edge_response.raise_for_status()
+
+                log.info("App instance deleted successfully")
+                # CAMARA-compliant 204 response (No Content for successful deletion)
+                return build_custom_http_response(
+                    status_code=204,
+                    content="",
+                    headers={"Content-Type": "application/json"},
+                    encoding="utf-8",
+                    url=i2edge_response.url,
+                    request=i2edge_response.request,
+                )
+            else:
+                i2edge_response.raise_for_status()
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to undeploy app from i2Edge: {e}")
+            raise
 
-    def undeploy_app(self, app_instance_id: str) -> None:
-        url = "{}/app".format(self.base_url)
-        try:
-            i2edge_delete(url, app_instance_id)
-            log.info("App instance deleted successfully")
-        except I2EdgeError as e:
-            raise e
+    # ########################################################################
+    # GSMA EDGE COMPUTING API (EWBI OPG) - FEDERATION
+    # ########################################################################
 
-    # GSMA FM
+    # ------------------------------------------------------------------------
+    # Zone Management (GSMA)
+    # ------------------------------------------------------------------------
 
-    # FederationManagement
+    def get_edge_cloud_zones_list_gsma(self) -> Response:
+        """
+        Retrieves details of all Zones for GSMA federation.
 
-    def get_edge_cloud_zones_list_gsma(self) -> List:
+        :return: Response with zone details in GSMA format.
+        """
         url = "{}/zones/list".format(self.base_url)
         params = {}
         try:
@@ -272,7 +602,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         "geographyDetails": item.get("geographyDetails"),
                     }
                     response_list.append(content)
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=response_list,
                     headers={"Content-Type": self.content_type_gsma},
@@ -284,9 +614,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    # AvailabilityZoneInfoSynchronization
+    def get_edge_cloud_zones_gsma(self) -> Response:
+        """
+        Retrieves details of all Zones with compute resources and flavours for GSMA federation.
 
-    def get_edge_cloud_zones_gsma(self) -> Dict:
+        :return: Response with zones and detailed resource information.
+        """
         url = "{}/zones".format(self.base_url)
         params = {}
         try:
@@ -297,20 +630,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 for item in response_json:
                     content = {
                         "zoneId": item.get("zoneId"),
-                        "reservedComputeResources": item.get(
-                            "reservedComputeResources"
-                        ),
-                        "computeResourceQuotaLimits": item.get(
-                            "computeResourceQuotaLimits"
-                        ),
+                        "reservedComputeResources": item.get("reservedComputeResources"),
+                        "computeResourceQuotaLimits": item.get("computeResourceQuotaLimits"),
                         "flavoursSupported": item.get("flavoursSupported"),
                         "networkResources": item.get("networkResources"),
-                        "zoneServiceLevelObjsInfo": item.get(
-                            "zoneServiceLevelObjsInfo"
-                        ),
+                        "zoneServiceLevelObjsInfo": item.get("zoneServiceLevelObjsInfo"),
                     }
                     response_list.append(content)
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=response_list,
                     headers={"Content-Type": self.content_type_gsma},
@@ -322,7 +649,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Dict:
+    def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Response:
+        """
+        Retrieves details of a specific Edge Cloud Zone reserved
+        for the specified zone by the partner OP using GSMA federation.
+
+        :param zone_id: Unique identifier of the Edge Cloud Zone.
+        :return: Response with Edge Cloud Zone details.
+        """
         url = "{}/zone/{}".format(self.base_url, zone_id)
         params = {}
         try:
@@ -331,19 +665,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 response_json = response.json()
                 content = {
                     "zoneId": response_json.get("zoneId"),
-                    "reservedComputeResources": response_json.get(
-                        "reservedComputeResources"
-                    ),
-                    "computeResourceQuotaLimits": response_json.get(
-                        "computeResourceQuotaLimits"
-                    ),
+                    "reservedComputeResources": response_json.get("reservedComputeResources"),
+                    "computeResourceQuotaLimits": response_json.get("computeResourceQuotaLimits"),
                     "flavoursSupported": response_json.get("flavoursSupported"),
                     "networkResources": response_json.get("networkResources"),
-                    "zoneServiceLevelObjsInfo": response_json.get(
-                        "zoneServiceLevelObjsInfo"
-                    ),
+                    "zoneServiceLevelObjsInfo": response_json.get("zoneServiceLevelObjsInfo"),
                 }
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=content,
                     headers={"Content-Type": self.content_type_gsma},
@@ -355,9 +683,19 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    # ArtefactManagement
+    # ------------------------------------------------------------------------
+    # Artefact Management (GSMA)
+    # ------------------------------------------------------------------------
 
-    def create_artefact_gsma(self, request_body: Dict) -> Dict:
+    def create_artefact_gsma(self, request_body: Dict) -> Response:
+        """
+        Uploads application artefact on partner OP using GSMA federation.
+        Artefact is a zip file containing scripts and/or packaging files like Terraform or Helm
+        which are required to create an instance of an application.
+
+        :param request_body: Payload with artefact information.
+        :return: Response with artefact upload confirmation.
+        """
         try:
             artefact_id = request_body["artefactId"]
             artefact_name = request_body["artefactName"]
@@ -374,9 +712,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 "token": repo_data.get("token"),
             }
 
-            response = self._create_artefact(**transformed)
+            response = self.create_artefact(**transformed)
             if response.status_code == 201:
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content={"response": "Artefact uploaded successfully"},
                     headers={"Content-Type": self.content_type_gsma},
@@ -388,9 +726,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA artefact payload: {e}")
 
-    def get_artefact_gsma(self, artefact_id: str) -> Dict:
+    def get_artefact_gsma(self, artefact_id: str) -> Response:
+        """
+        Retrieves details about an artefact from partner OP using GSMA federation.
+
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Response with artefact details.
+        """
         try:
-            response = self._get_artefact(artefact_id)
+            response = self.get_artefact(artefact_id)
             if response.status_code == 200:
                 response_json = response.json()
                 print(response_json)
@@ -412,7 +756,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         "token": response_json.get("repo_token"),
                     },
                 }
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=content,
                     headers={"Content-Type": self.content_type_gsma},
@@ -425,10 +769,16 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
 
     def delete_artefact_gsma(self, artefact_id: str) -> Response:
+        """
+        Removes an artefact from partners OP.
+
+        :param artefact_id: Unique identifier of the artefact.
+        :return: Response with artefact deletion confirmation.
+        """
         try:
-            response = self._delete_artefact(artefact_id)
+            response = self.delete_artefact(artefact_id)
             if response.status_code == 200:
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content='{"response": "Artefact deletion successful"}',
                     headers={"Content-Type": self.content_type_gsma},
@@ -440,19 +790,29 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
 
-    # ApplicationOnboardingManagement
+    # ------------------------------------------------------------------------
+    # Application Onboarding Management (GSMA)
+    # ------------------------------------------------------------------------
 
     def onboard_app_gsma(self, request_body: dict) -> Response:
+        """
+        Submits an application details to a partner OP.
+        Based on the details provided, partner OP shall do bookkeeping,
+        resource validation and other pre-deployment operations.
+
+        :param request_body: Payload with onboarding info.
+        :return: Response with onboarding confirmation.
+        """
         body = deepcopy(request_body)
         try:
             body["app_id"] = body.pop("appId")
             body.pop("edgeAppFQDN", None)
             data = body
-            payload = schemas.ApplicationOnboardingRequest(profile_data=data)
+            payload = i2edge_schemas.ApplicationOnboardingRequest(profile_data=data)
             url = "{}/application/onboarding".format(self.base_url)
             response = i2edge_post(url, payload)
             if response.status_code == 201:
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content={"response": "Application onboarded successfully"},
                     headers={"Content-Type": self.content_type_gsma},
@@ -464,7 +824,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA onboarding payload: {e}")
 
-    def get_onboarded_app_gsma(self, app_id: str) -> Dict:
+    def get_onboarded_app_gsma(self, app_id: str) -> Response:
+        """
+        Retrieves application details from partner OP using GSMA federation.
+
+        :param app_id: Identifier of the application onboarded.
+        :return: Response with application details.
+        """
         try:
             response = self.get_onboarded_app(app_id)
             if response.status_code == 200:
@@ -478,7 +844,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     "appQoSProfile": profile_data.get("appQoSProfile"),
                     "appComponentSpecs": profile_data.get("appComponentSpecs"),
                 }
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=content,
                     headers={"Content-Type": self.content_type_gsma},
@@ -490,14 +856,32 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
 
-    def patch_onboarded_app_gsma(self, app_id: str, request_body: dict) -> Dict:
+    def patch_onboarded_app_gsma(
+        self, federation_context_id: str, app_id: str, request_body: dict
+    ) -> Response:
+        """
+        Updates partner OP about changes in application compute resource requirements,
+        QOS Profile, associated descriptor or change in associated components using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :param request_body: Payload with updated onboarding info.
+        :return: Response with update confirmation.
+        """
         pass
 
-    def delete_onboarded_app_gsma(self, app_id: str) -> Response:
+    def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Response:
+        """
+        Deboards an application from specific partner OP zones using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param app_id: Identifier of the application onboarded.
+        :return: Response with deboarding confirmation.
+        """
         try:
             response = self.delete_onboarded_app(app_id)
             if response.status_code == 200:
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content={"response": "App deletion successful"},
                     headers={"Content-Type": self.content_type_gsma},
@@ -509,20 +893,32 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
 
-    # ApplicationDeploymentManagement
+    # ------------------------------------------------------------------------
+    # Application Deployment Management (GSMA)
+    # ------------------------------------------------------------------------
 
-    def deploy_app_gsma(self, request_body: dict) -> Dict:
+    def deploy_app_gsma(
+        self, federation_context_id: str, idempotency_key: str, request_body: dict
+    ) -> Response:
+        """
+        Instantiates an application on a partner OP zone using GSMA federation.
+
+        :param federation_context_id: Identifier of the federation context.
+        :param idempotency_key: Idempotency key for request deduplication.
+        :param request_body: Payload with deployment information.
+        :return: Response with deployment details.
+        """
         body = deepcopy(request_body)
         try:
             zone_id = body.get("zoneInfo").get("zoneId")
             flavour_id = body.get("zoneInfo").get("flavourId")
-            app_deploy_data = schemas.AppDeployData(
+            app_deploy_data = i2edge_schemas.AppDeployData(
                 appId=body.get("appId"),
                 appProviderId=body.get("appProviderId"),
                 appVersion=body.get("appVersion"),
-                zoneInfo=schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
+                zoneInfo=i2edge_schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
             )
-            payload = schemas.AppDeploy(app_deploy_data=app_deploy_data)
+            payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_post(url, payload)
             if response.status_code == 202:
@@ -531,7 +927,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     "zoneId": response_json.get("zoneID"),
                     "appInstIdentifier": response_json.get("app_instance_id"),
                 }
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=202,
                     content=content,
                     headers={"Content-Type": self.content_type_gsma},
@@ -543,13 +939,17 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA deployment payload: {e}")
 
-    def get_deployed_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Dict:
+    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
+        """
+        Retrieves an application instance details from partner OP using GSMA federation.
+
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed instance.
+        :param zone_id: Identifier of the zone.
+        :return: Response with application instance details.
+        """
         try:
-            url = "{}/application_instance/{}/{}".format(
-                self.base_url, zone_id, app_instance_id
-            )
+            url = "{}/application_instance/{}/{}".format(self.base_url, zone_id, app_instance_id)
             params = {}
             response = i2edge_get(url, params=params)
             if response.status_code == 200:
@@ -558,7 +958,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     "appInstanceState": response_json.get("appInstanceState"),
                     "accesspointInfo": response_json.get("accesspointInfo"),
                 }
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=content,
                     headers={"Content-Type": self.content_type_gsma},
@@ -570,7 +970,14 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId or zoneId in GSMA payload: {e}")
 
-    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Dict:
+    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Response:
+        """
+        Retrieves all instances for a given application of partner OP using GSMA federation.
+
+        :param app_id: Identifier of the app.
+        :param app_provider: App provider identifier.
+        :return: Response with application instances details.
+        """
         try:
             url = "{}/application_instances".format(self.base_url)
             params = {}
@@ -593,7 +1000,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         }
                     ]
                     response_list.append(content)
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
                     content=response_list,
                     headers={"Content-Type": self.content_type_gsma},
@@ -605,18 +1012,22 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Error retrieving apps: {e}")
 
-    def undeploy_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Response:
+    def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
+        """
+        Terminate an application instance on a partner OP zone.
+
+        :param app_id: Identifier of the app.
+        :param app_instance_id: Identifier of the deployed app.
+        :param zone_id: Identifier of the zone.
+        :return: Response with termination confirmation.
+        """
         try:
             url = "{}/application_instance".format(self.base_url)
             response = i2edge_delete(url, app_instance_id)
             if response.status_code == 200:
-                return self._build_custom_gsma_response(
+                return build_custom_http_response(
                     status_code=200,
-                    content={
-                        "response": "Application instance termination request accepted"
-                    },
+                    content={"response": "Application instance termination request accepted"},
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
@@ -625,29 +1036,3 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             return response
         except KeyError as e:
             raise I2EdgeError(f"Missing appInstanceId in GSMA payload: {e}")
-
-    # GSMA Support methods
-
-    def _build_custom_gsma_response(
-        self,
-        status_code: int,
-        content: str | bytes | dict | list,
-        headers: dict = None,
-        encoding: str = None,
-        url: str = None,
-        request=None,
-    ) -> Response:
-        response = Response()
-        response.status_code = status_code
-        if isinstance(content, (dict, list)):
-            content = json.dumps(content)
-        response._content = (
-            content.encode(encoding or "utf-8") if isinstance(content, str) else content
-        )
-        response.headers.update(headers or {})
-        response.encoding = encoding or "utf-8"
-        if url:
-            response.url = url
-        if request:
-            response.request = request
-        return response

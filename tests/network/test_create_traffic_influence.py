@@ -9,9 +9,7 @@ from sunrise6g_opensdk.network.core.common import CoreHttpError
 from tests.network.test_cases import test_cases
 
 ti_session1 = {
-    "device": {
-        "ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}
-    },
+    "device": {"ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}},
     "edgeCloudZoneId": "edge",
     "appId": "testSdk-ffff-aaaa-c0ffe",
     "appInstanceId": "172.21.18.3",
@@ -19,9 +17,7 @@ ti_session1 = {
 }
 
 ti_session1_put = {
-    "device": {
-        "ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}
-    },
+    "device": {"ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}},
     "edgeCloudZoneId": "edge2",
     "appId": "testSdk-ffff-aaaa-c0ffe",
     "appInstanceId": "172.21.18.3",
@@ -29,9 +25,7 @@ ti_session1_put = {
 }
 
 ti_session2 = {
-    "device": {
-        "ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}
-    },
+    "device": {"ipv4Address": {"publicAddress": "12.1.2.31", "privateAddress": "12.1.2.31"}},
     "edgeCloudZoneId": "edge",
     "appId": "testSdk-ffff-aaaa-c0ffe",
     "appInstanceId": "172.21.18.65",
@@ -71,9 +65,7 @@ def traffic_influence_id(network_client: BaseNetworkClient):
         response = network_client.create_traffic_influence_resource(ti_session1)
         assert response is not None, "Response should not be None"
         assert isinstance(response, dict), "Response should be a dictionary"
-        assert (
-            "trafficInfluenceID" in response
-        ), "Response should contain 'trafficInfluenceID'"
+        assert "trafficInfluenceID" in response, "Response should contain 'trafficInfluenceID'"
         yield str(response["trafficInfluenceID"])
     finally:
         pass
@@ -85,9 +77,7 @@ def traffic_influence_id2(network_client: BaseNetworkClient):
         response = network_client.create_traffic_influence_resource(ti_session2)
         assert response is not None, "Response should not be None"
         assert isinstance(response, dict), "Response should be a dictionary"
-        assert (
-            "trafficInfluenceID" in response
-        ), "Response should contain 'trafficInfluenceID'"
+        assert "trafficInfluenceID" in response, "Response should contain 'trafficInfluenceID'"
         yield str(response["trafficInfluenceID"])
     finally:
         pass
@@ -119,26 +109,18 @@ def test_timer_wait_5_seconds(network_client):
 
 
 @pytest.mark.parametrize("network_client", test_cases, ids=id_func, indirect=True)
-def test_get_traffic_influence_session_1(
-    network_client: BaseNetworkClient, traffic_influence_id
-):
+def test_get_traffic_influence_session_1(network_client: BaseNetworkClient, traffic_influence_id):
     try:
-        response = network_client.get_individual_traffic_influence_resource(
-            traffic_influence_id
-        )
+        response = network_client.get_individual_traffic_influence_resource(traffic_influence_id)
         assert response is not None, "response should not be None"
     except CoreHttpError as e:
         pytest.fail(f"Failed to get traffic influence: {e}")
 
 
 @pytest.mark.parametrize("network_client", test_cases, ids=id_func, indirect=True)
-def test_put_traffic_influence_session_1(
-    network_client: BaseNetworkClient, traffic_influence_id
-):
+def test_put_traffic_influence_session_1(network_client: BaseNetworkClient, traffic_influence_id):
     try:
-        network_client.put_traffic_influence_resource(
-            traffic_influence_id, ti_session1_put
-        )
+        network_client.put_traffic_influence_resource(traffic_influence_id, ti_session1_put)
     except CoreHttpError as e:
         pytest.fail(f"Failed to update traffic influence session: {e}")
 
@@ -148,9 +130,7 @@ def test_get_traffic_influence_session_after_put_1(
     network_client: BaseNetworkClient, traffic_influence_id
 ):
     try:
-        response = network_client.get_individual_traffic_influence_resource(
-            traffic_influence_id
-        )
+        response = network_client.get_individual_traffic_influence_resource(traffic_influence_id)
         assert response is not None, "response should not be None"
     except CoreHttpError as e:
         pytest.fail(f"Failed to get traffic influence: {e}")

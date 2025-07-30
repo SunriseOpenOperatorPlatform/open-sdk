@@ -1,16 +1,20 @@
 CONFIG = {
     "i2edge": {
-        "ZONE_ID": "Omega",
-        "ARTEFACT_ID": "i2edgechart-id-2",
+        # Basic identifiers
+        "ZONE_ID": "f0662bfe-1d90-5f59-a759-c755b3b69b93",
+        "APP_ID": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
+        # Artefact-related fields (non-CAMARA endpoints)
+        "ARTEFACT_ID": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
         "ARTEFACT_NAME": "i2edgechart",
         "REPO_NAME": "github-cesar",
         "REPO_TYPE": "PUBLICREPO",
         "REPO_URL": "https://cesarcajas.github.io/helm-charts-examples/",
+        # CAMARA onboard_app payload
         "APP_ONBOARD_MANIFEST": {
-            "appId": "i2edgechart-id-2",
-            "name": "i2edge-app-SDK",
+            "appId": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",  # Optional to CAMARA
+            "name": "i2edge_app_SDK",
             "version": "1.0.0",
-            "appProvider": "i2CAT",
+            "appProvider": "i2CAT_DEV",
             "packageType": "CONTAINER",
             "appRepo": {
                 "type": "PUBLICREPO",
@@ -46,19 +50,21 @@ CONFIG = {
                 }
             ],
         },
-        "APP_ID": "i2edgechart-id-2",
-        "APP_ZONES": [
-            {
-                "kubernetesClusterRef": "not-used",
-                "EdgeCloudZone": {
-                    "edgeCloudZoneId": "Omega",
-                    "edgeCloudZoneName": "not-used",
-                    "edgeCloudZoneStatus": "not-used",
-                    "edgeCloudProvider": "not-used",
-                    "edgeCloudRegion": "not-used",
-                },
-            }
-        ],
+        # CAMARA deploy_app payload
+        "APP_DEPLOY_PAYLOAD": {
+            "appId": "9c9143f0-f44f-49df-939e-1e8b891ba8f5",
+            "appZones": [
+                {
+                    "EdgeCloudZone": {
+                        "edgeCloudZoneId": "f0662bfe-1d90-5f59-a759-c755b3b69b93",
+                        "edgeCloudZoneName": "i2edge-zone-1",
+                        "edgeCloudZoneStatus": "active",
+                        "edgeCloudProvider": "i2CAT",
+                        "edgeCloudRegion": "Europe-West",
+                    }
+                }
+            ],
+        },
     },
     "aeros": {
         "ZONE_ID": "urn:ngsi-ld:Domain:NCSRD",
@@ -108,23 +114,43 @@ CONFIG = {
             ],
         },
         "APP_ID": "aeros-app-2",
-        "APP_ZONES": [
-            {
-                "kubernetesClusterRef": "not-used",
-                "EdgeCloudZone": {
-                    "edgeCloudZoneId": "urn:ngsi-ld:Domain:NCSRD",
-                    "edgeCloudZoneName": "not-used",
-                    "edgeCloudZoneStatus": "not-used",
-                    "edgeCloudProvider": "not-used",
-                    "edgeCloudRegion": "not-used",
-                },
-            }
-        ],
+        # CAMARA deploy_app payload
+        "APP_DEPLOY_PAYLOAD": {
+            "appId": "aeros-app-2",
+            "appZones": [
+                {
+                    "EdgeCloudZone": {
+                        "edgeCloudZoneId": "urn:ngsi-ld:Domain:NCSRD",
+                        "edgeCloudZoneName": "aeros-zone-1",
+                        "edgeCloudZoneStatus": "active",
+                        "edgeCloudProvider": "NCSRD",
+                        "edgeCloudRegion": "Europe-South",
+                    }
+                }
+            ],
+        },
     },
     "kubernetes": {
         "K8S_ONBOARDED_APP_NAME": "nginx",
         "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
+        "APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "ZONE_ID": "b2a1b33d-f382-47de-b555-2d32155eb74c",
+        # CAMARA deploy_app payload
+        "APP_DEPLOY_PAYLOAD": {
+            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "appZones": [
+                {
+                    "EdgeCloudZone": {
+                        "edgeCloudZoneId": "b2a1b33d-f382-47de-b555-2d32155eb74c",
+                        "edgeCloudZoneName": "k8s-zone-1",
+                        "edgeCloudZoneStatus": "active",
+                        "edgeCloudProvider": "kubernetes",
+                        "edgeCloudRegion": "Local",
+                    }
+                }
+            ],
+        },
+        # Legacy K8S_DEPLOY_PAYLOAD for backward compatibility (if needed)
         "K8S_DEPLOY_PAYLOAD": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "name": "nginx-test",

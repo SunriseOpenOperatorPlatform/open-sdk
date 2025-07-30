@@ -20,7 +20,5 @@ def copy_artifact(body):
     logging.info("Submitting artifact to Artifact Manager")
     # body = json.dumps(body)
     headers = {"Content-Type": "application/json"}
-    response = requests.post(
-        artifact_manager_host + "/copy-artefact", headers=headers, json=body
-    )
+    response = requests.post(artifact_manager_host + "/copy-artefact", headers=headers, json=body)
     return response

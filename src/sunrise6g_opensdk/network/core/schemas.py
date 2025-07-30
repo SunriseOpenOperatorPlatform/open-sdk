@@ -119,9 +119,7 @@ class SponsorInformation(BaseModel):
 
 
 class QosMonitoringInformationModel(BaseModel):
-    reqQosMonParams: list[RequestedQosMonitoringParameter] | None = Field(
-        None, min_length=1
-    )
+    reqQosMonParams: list[RequestedQosMonitoringParameter] | None = Field(None, min_length=1)
     repFreqs: list[ReportingFrequency] | None = Field(None, min_length=1)
     repThreshDl: Uinteger | None = None
     repThreshUl: Uinteger | None = None
@@ -158,9 +156,7 @@ class AsSessionWithQoSSubscription(BaseModel):
     ethFlowInfo: list[EthFlowDescription] | None = Field(
         None, description="Identifies Ethernet packet flows.", min_length=1
     )
-    qosReference: str | None = Field(
-        None, description="Identifies a pre-defined QoS information"
-    )
+    qosReference: str | None = Field(None, description="Identifies a pre-defined QoS information")
     altQoSReferences: list[str] | None = Field(
         None,
         description="Identifies an ordered list of pre-defined QoS information. The \
@@ -225,9 +221,7 @@ class TrafficInfluSub(BaseModel):  # Replace with a meaningful name
     def add_flow_descriptor(self, flow_descriptor: str):
         self.trafficFilters = list()
         self.trafficFilters.append(
-            FlowInfo(
-                flowId=len(self.trafficFilters) + 1, flowDescriptions=[flow_descriptor]
-            )
+            FlowInfo(flowId=len(self.trafficFilters) + 1, flowDescriptions=[flow_descriptor])
         )
 
     def add_traffic_route(self, dnai: str):
@@ -262,24 +256,18 @@ class PlmnId(BaseModel):
 
 # The enumeration Accuracy represents a desired granularity of accuracy of the requested location information.
 class Accuracy(str, Enum):
-    cgi_ecgi = (
-        "CGI_ECGI"  # The AF requests to be notified using cell level location accuracy.
-    )
-    ta_ra = (
-        "TA_RA"  # The AF requests to be notified using TA/RA level location accuracy.
-    )
+    cgi_ecgi = "CGI_ECGI"  # The AF requests to be notified using cell level location accuracy.
+    ta_ra = "TA_RA"  # The AF requests to be notified using TA/RA level location accuracy.
     geo_area = "GEO_AREA"  # The AF requests to be notified using the geographical area accuracy.
-    civic_addr = "CIVIC_ADDR"  # The AF requests to be notified using the civic address accuracy. #EDGEAPP
+    civic_addr = (
+        "CIVIC_ADDR"  # The AF requests to be notified using the civic address accuracy. #EDGEAPP
+    )
 
 
 # If locationType set to "LAST_KNOWN_LOCATION", the monitoring event request from AF shall be only for one-time monitoring request
 class LocationType(str, Enum):
-    CURRENT_LOCATION = (
-        "CURRENT_LOCATION"  # The AF requests to be notified for current location.
-    )
-    LAST_KNOWN = (
-        "LAST_KNOWN_LOCATION"  # The AF requests to be notified for last known location.
-    )
+    CURRENT_LOCATION = "CURRENT_LOCATION"  # The AF requests to be notified for current location.
+    LAST_KNOWN = "LAST_KNOWN_LOCATION"  # The AF requests to be notified for last known location.
 
 
 # This data type represents a monitoring event type.
@@ -309,15 +297,11 @@ class PointListNef(BaseModel):
 
 
 class NefPolygon(BaseModel):
-    point_list: PointListNef = Field(
-        ..., description="List of points defining the polygon."
-    )
+    point_list: PointListNef = Field(..., description="List of points defining the polygon.")
 
 
 class GeographicArea(BaseModel):
-    polygon: NefPolygon | None = Field(
-        None, description="Identifies a polygonal geographic area."
-    )
+    polygon: NefPolygon | None = Field(None, description="Identifies a polygonal geographic area.")
 
 
 # This data type represents the user location information which is sent from the NEF to the AF.
@@ -327,13 +311,9 @@ class LocationInfo(BaseModel):
         description="Indicates the elapsed time since the last network contact of the UE.",
     )
     cellId: str | None = Field(None, description="Cell ID where the UE is located.")
-    trackingAreaId: str | None = Field(
-        None, description="TrackingArea ID where the UE is located."
-    )
+    trackingAreaId: str | None = Field(None, description="TrackingArea ID where the UE is located.")
     enodeBId: str | None = Field(None, description="eNodeB ID where the UE is located.")
-    routingAreaId: str | None = Field(
-        None, description="Routing Area ID where the UE is located"
-    )
+    routingAreaId: str | None = Field(None, description="Routing Area ID where the UE is located")
     plmnId: PlmnId | None = Field(None, description="PLMN ID where the UE is located.")
     twanId: str | None = Field(None, description="TWAN ID where the UE is located.")
     geographicArea: GeographicArea | None = Field(
@@ -354,12 +334,8 @@ class MonitoringEventSubscriptionRequest(BaseModel):
         None,
         description="Identifies the MS internal PSTN/ISDN number allocated for a UE.",
     )
-    ipv4Addr: IPv4Address | None = Field(
-        None, description="Identifies the Ipv4 address."
-    )
-    ipv6Addr: IPv6Address | None = Field(
-        None, description="Identifies the Ipv6 address."
-    )
+    ipv4Addr: IPv4Address | None = Field(None, description="Identifies the Ipv4 address.")
+    ipv6Addr: IPv6Address | None = Field(None, description="Identifies the Ipv6 address.")
     notificationDestination: AnyHttpUrl = Field(
         ...,
         description="URI of a notification destination that the T8 message shall be delivered to.",
@@ -390,9 +366,7 @@ class MonitoringEventSubscriptionRequest(BaseModel):
 
 # This data type represents a monitoring event notification which is sent from the NEF to the AF.
 class MonitoringEventReport(BaseModel):
-    externalId: str | None = Field(
-        None, description="Identifies a user, clause 4.6.2 TS 23.682"
-    )
+    externalId: str | None = Field(None, description="Identifies a user, clause 4.6.2 TS 23.682")
     msisdn: str | None = Field(
         None,
         description="Identifies the MS internal PSTN/ISDN number allocated for a UE.",
@@ -585,9 +559,7 @@ class Circle(BaseModel):
 
 class Polygon(BaseModel):
     areaType: Literal[AreaType.polygon]
-    boundary: Annotated[
-        PointList, Field(description="List of points defining the polygon.")
-    ]
+    boundary: Annotated[PointList, Field(description="List of points defining the polygon.")]
 
 
 Area = Annotated[Circle | Polygon, Field(discriminator="areaType")]
@@ -608,9 +580,7 @@ class LastLocationTime(
 
 
 class Location(BaseModel):
-    lastLocationTime: Annotated[
-        LastLocationTime, Field(description="Last known location time.")
-    ]
+    lastLocationTime: Annotated[LastLocationTime, Field(description="Last known location time.")]
     area: Annotated[Area, Field(description="Geographical area of the location.")]
 
 
@@ -697,9 +667,7 @@ class BaseSessionInfo(BaseModel):
     ] = None
     applicationServerPorts: Annotated[
         PortsSpec | None,
-        Field(
-            description="A list of single ports or port ranges on the application server"
-        ),
+        Field(description="A list of single ports or port ranges on the application server"),
     ] = None
     qosProfile: QosProfileName
     sink: Annotated[

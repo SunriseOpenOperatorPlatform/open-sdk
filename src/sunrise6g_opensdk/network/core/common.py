@@ -62,9 +62,7 @@ class CoreHttpError(Exception):
 
 
 # Monitoring Event Methods
-def monitoring_event_post(
-    base_url: str, scs_as_id: str, model_payload: BaseModel
-) -> dict:
+def monitoring_event_post(base_url: str, scs_as_id: str, model_payload: BaseModel) -> dict:
     data = model_payload.model_dump_json(exclude_none=True, by_alias=True)
     url = monitoring_event_build_url(base_url, scs_as_id)
     return _make_request("POST", url, data=data)
@@ -79,9 +77,7 @@ def monitoring_event_build_url(base_url: str, scs_as_id: str, session_id: str = 
 
 
 # QoD methods
-def as_session_with_qos_post(
-    base_url: str, scs_as_id: str, model_payload: BaseModel
-) -> dict:
+def as_session_with_qos_post(base_url: str, scs_as_id: str, model_payload: BaseModel) -> dict:
     data = model_payload.model_dump_json(exclude_none=True, by_alias=True)
     url = as_session_with_qos_build_url(base_url, scs_as_id)
     return _make_request("POST", url, data=data)
@@ -97,9 +93,7 @@ def as_session_with_qos_delete(base_url: str, scs_as_id: str, session_id: str):
     return _make_request("DELETE", url)
 
 
-def as_session_with_qos_build_url(
-    base_url: str, scs_as_id: str, session_id: str = None
-):
+def as_session_with_qos_build_url(base_url: str, scs_as_id: str, session_id: str = None):
     url = f"{base_url}/3gpp-as-session-with-qos/v1/{scs_as_id}/subscriptions"
     if session_id is not None and len(session_id) > 0:
         return f"{url}/{session_id}"
@@ -108,9 +102,7 @@ def as_session_with_qos_build_url(
 
 
 # Traffic Influence Methods
-def traffic_influence_post(
-    base_url: str, scs_as_id: str, model_payload: BaseModel
-) -> dict:
+def traffic_influence_post(base_url: str, scs_as_id: str, model_payload: BaseModel) -> dict:
     data = model_payload.model_dump_json(exclude_none=True)
     url = traffic_influence_build_url(base_url, scs_as_id)
     return _make_request("POST", url, data=data)
@@ -134,9 +126,7 @@ def traffic_influence_get(base_url: str, scs_as_id: str, sessionId: str = None) 
     return _make_request("GET", url)
 
 
-def traffic_influence_get_all(
-    base_url: str, scs_as_id: str, sessionId: str = None
-) -> list[dict]:
+def traffic_influence_get_all(base_url: str, scs_as_id: str, sessionId: str = None) -> list[dict]:
     url = traffic_influence_build_url(base_url, scs_as_id)
     return _make_request("GET", url)
 

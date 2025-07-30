@@ -86,9 +86,7 @@ class RequiredResources(Model):
         :type num_cpu: int
         """
         if num_cpu is None:
-            raise ValueError(
-                "Invalid value for `num_cpu`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `num_cpu`, must not be `None`")  # noqa: E501
 
         self._num_cpu = num_cpu
 
@@ -113,9 +111,7 @@ class RequiredResources(Model):
         :type memory: int
         """
         if memory is None:
-            raise ValueError(
-                "Invalid value for `memory`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `memory`, must not be `None`")  # noqa: E501
 
         self._memory = memory
 
@@ -140,9 +136,7 @@ class RequiredResources(Model):
         :type storage: int
         """
         if storage is None:
-            raise ValueError(
-                "Invalid value for `storage`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `storage`, must not be `None`")  # noqa: E501
 
         self._storage = storage
 

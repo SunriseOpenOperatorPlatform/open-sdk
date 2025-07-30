@@ -31,9 +31,7 @@ def flatten_port_spec(ports_spec: schemas.PortsSpec | None) -> list[str]:
         flat_ports.extend([str(port) for port in ports_spec.ports])
     if ports_spec and ports_spec.ranges:
         has_ranges = True
-        flat_ports.extend(
-            [f"{range.from_.root}-{range.to.root}" for range in ports_spec.ranges]
-        )
+        flat_ports.extend([f"{range.from_.root}-{range.to.root}" for range in ports_spec.ranges])
     if not has_ports and not has_ranges:
         flat_ports.append("0-65535")
     return flat_ports
@@ -51,13 +49,10 @@ def build_flows(
     if isinstance(device_ip, schemas.DeviceIpv6Address):
         device_ip = device_ip.root
     else:  # IPv4
-        device_ip = (
-            device_ip.root.publicAddress.root or device_ip.root.privateAddress.root
-        )
+        device_ip = device_ip.root.publicAddress.root or device_ip.root.privateAddress.root
     device_ip = str(device_ip)
     server_ip = (
-        session_info.applicationServer.ipv4Address
-        or session_info.applicationServer.ipv6Address
+        session_info.applicationServer.ipv4Address or session_info.applicationServer.ipv6Address
     )
     server_ip = server_ip.root
     flow_descrs = []
@@ -68,9 +63,7 @@ def build_flows(
         flow_descrs.append(
             f"permit out ip from {server_ip} {server_port} to {device_ip} {device_port}"
         )
-    flows = [
-        schemas.FlowInfo(flowId=flow_id, flowDescriptions=[", ".join(flow_descrs)])
-    ]
+    flows = [schemas.FlowInfo(flowId=flow_id, flowDescriptions=[", ".join(flow_descrs)])]
     return flows
 
 
@@ -170,9 +163,7 @@ class BaseNetworkClient:
         pass
 
     @requires_capability("qod")
-    def _build_qod_subscription(
-        self, session_info: Dict
-    ) -> schemas.AsSessionWithQoSSubscription:
+    def _build_qod_subscription(self, session_info: Dict) -> schemas.AsSessionWithQoSSubscription:
         valid_session_info = schemas.CreateSession.model_validate(session_info)
         device_ipv4 = None
         if valid_session_info.device.ipv4Address:
@@ -244,9 +235,7 @@ class BaseNetworkClient:
         self, retrieve_location_request: schemas.RetrievalLocationRequest
     ) -> schemas.MonitoringEventSubscriptionRequest:
         self.core_specific_monitoring_event_validation(retrieve_location_request)
-        subscription_3gpp = self.add_core_specific_location_parameters(
-            retrieve_location_request
-        )
+        subscription_3gpp = self.add_core_specific_location_parameters(retrieve_location_request)
         device = retrieve_location_request.device
         subscription_3gpp.externalId = device.networkAccessIdentifier
         subscription_3gpp.ipv4Addr = device.ipv4Address
@@ -271,9 +260,7 @@ class BaseNetworkClient:
             datetime object representing the last location time in UTC.
         """
         if age_of_location_info_min is not None:
-            last_location_time = event_time - timedelta(
-                minutes=age_of_location_info_min
-            )
+            last_location_time = event_time - timedelta(minutes=age_of_location_info_min)
             return last_location_time.replace(tzinfo=timezone.utc)
         else:
             return event_time.replace(tzinfo=timezone.utc)
@@ -292,45 +279,31 @@ class BaseNetworkClient:
         returns:
             dictionary containing the created subscription details, including its ID.
         """
-        subscription = self._build_monitoring_event_subscription(
-            retrieve_location_request
-        )
-        response = common.monitoring_event_post(
-            self.base_url, self.scs_as_id, subscription
-        )
+        subscription = self._build_monitoring_event_subscription(retrieve_location_request)
+        response = common.monitoring_event_post(self.base_url, self.scs_as_id, subscription)
 
         monitoring_event_report = schemas.MonitoringEventReport(**response)
         if monitoring_event_report.locationInfo is None:
-            log.error(
-                "Failed to retrieve location information from monitoring event report"
-            )
-            raise NetworkPlatformError(
-                "Location information not found in monitoring event report"
-            )
+            log.error("Failed to retrieve location information from monitoring event report")
+            raise NetworkPlatformError("Location information not found in monitoring event report")
         geo_area = monitoring_event_report.locationInfo.geographicArea
         report_event_time = monitoring_event_report.eventTime
         age_of_location_info = None
         if monitoring_event_report.locationInfo.ageOfLocationInfo is not None:
-            age_of_location_info = (
-                monitoring_event_report.locationInfo.ageOfLocationInfo.duration
-            )
+            age_of_location_info = monitoring_event_report.locationInfo.ageOfLocationInfo.duration
         last_location_time = self._compute_camara_last_location_time(
             report_event_time, age_of_location_info
         )
         log.debug(f"Last Location time is {last_location_time}")
         camara_point_list: list[schemas.Point] = []
         for point in geo_area.polygon.point_list.geographical_coords:
-            camara_point_list.append(
-                schemas.Point(latitude=point.lat, longitude=point.lon)
-            )
+            camara_point_list.append(schemas.Point(latitude=point.lat, longitude=point.lon))
         camara_polygon = schemas.Polygon(
             areaType=schemas.AreaType.polygon,
             boundary=schemas.PointList(camara_point_list),
         )
 
-        camara_location = schemas.Location(
-            area=camara_polygon, lastLocationTime=last_location_time
-        )
+        camara_location = schemas.Location(area=camara_polygon, lastLocationTime=last_location_time)
 
         return camara_location
 
@@ -347,9 +320,7 @@ class BaseNetworkClient:
             dictionary containing the created session details, including its ID.
         """
         subscription = self._build_qod_subscription(session_info)
-        response = common.as_session_with_qos_post(
-            self.base_url, self.scs_as_id, subscription
-        )
+        response = common.as_session_with_qos_post(self.base_url, self.scs_as_id, subscription)
         subscription_info: schemas.AsSessionWithQoSSubscription = (
             schemas.AsSessionWithQoSSubscription(**response)
         )
@@ -407,9 +378,7 @@ class BaseNetworkClient:
         returns:
             None
         """
-        common.as_session_with_qos_delete(
-            self.base_url, self.scs_as_id, session_id=session_id
-        )
+        common.as_session_with_qos_delete(self.base_url, self.scs_as_id, session_id=session_id)
         log.info(f"QoD session deleted successfully [id={session_id}]")
 
     @requires_capability("traffic_influence")
@@ -426,9 +395,7 @@ class BaseNetworkClient:
         """
 
         subscription = self._build_ti_subscription(traffic_influence_info)
-        response = common.traffic_influence_post(
-            self.base_url, self.scs_as_id, subscription
-        )
+        response = common.traffic_influence_post(self.base_url, self.scs_as_id, subscription)
 
         # retrieve the NEF resource id
         if "self" in response.keys():
@@ -453,9 +420,7 @@ class BaseNetworkClient:
             Dictionary containing the details of the requested Traffic Influence resource.
         """
         subscription = self._build_ti_subscription(traffic_influence_info)
-        common.traffic_influence_put(
-            self.base_url, self.scs_as_id, resource_id, subscription
-        )
+        common.traffic_influence_put(self.base_url, self.scs_as_id, resource_id, subscription)
 
         traffic_influence_info["trafficInfluenceID"] = resource_id
         return traffic_influence_info
@@ -476,9 +441,7 @@ class BaseNetworkClient:
 
     @requires_capability("traffic_influence")
     def get_individual_traffic_influence_resource(self, resource_id: str) -> Dict:
-        nef_response = common.traffic_influence_get(
-            self.base_url, self.scs_as_id, resource_id
-        )
+        nef_response = common.traffic_influence_get(self.base_url, self.scs_as_id, resource_id)
         camara_ti = self._build_camara_ti(nef_response)
         return camara_ti
 
