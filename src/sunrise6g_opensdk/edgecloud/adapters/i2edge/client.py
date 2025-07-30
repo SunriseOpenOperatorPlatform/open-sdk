@@ -43,6 +43,25 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         self.content_type_gsma = "application/json"
         self.encoding_gsma = "utf-8"
 
+    def _transform_to_camara_zone(self, zone_data: dict) -> camara_schemas.EdgeCloudZone:
+        """
+        Transform i2Edge zone data to CAMARA EdgeCloudZone format.
+
+        :param zone_data: Raw zone data from i2Edge API
+        :return: CAMARA-compliant EdgeCloudZone object
+        """
+        return camara_schemas.EdgeCloudZone(
+            edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(zone_data.get("zoneId", "unknown")),
+            edgeCloudZoneName=camara_schemas.EdgeCloudZoneName(
+                zone_data.get("nodeName", "unknown")
+            ),
+            edgeCloudProvider=camara_schemas.EdgeCloudProvider("i2edge"),
+            edgeCloudRegion=camara_schemas.EdgeCloudRegion(
+                zone_data.get("geographyDetails", "unknown")
+            ),
+            edgeCloudZoneStatus=camara_schemas.EdgeCloudZoneStatus.unknown,
+        )
+
     # ########################################################################
     # CAMARA EDGE CLOUD MANAGEMENT API
     # ########################################################################
@@ -71,17 +90,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 i2edge_response = response.json()
                 log.info("Availability zones retrieved successfully")
                 # Normalise to CAMARA format
-                camara_response = []
-                for z in i2edge_response:
-                    zone = camara_schemas.EdgeCloudZone(
-                        # edgeCloudZoneId = camara_schemas.EdgeCloudZoneId(z["zoneId"]),
-                        edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(z["zoneId"]),
-                        edgeCloudZoneName=camara_schemas.EdgeCloudZoneName(z["nodeName"]),
-                        edgeCloudProvider=camara_schemas.EdgeCloudProvider("i2edge"),
-                        edgeCloudRegion=camara_schemas.EdgeCloudRegion(z["geographyDetails"]),
-                        edgeCloudZoneStatus=camara_schemas.EdgeCloudZoneStatus.unknown,
-                    )
-                    camara_response.append(zone)
+                camara_response = [self._transform_to_camara_zone(z) for z in i2edge_response]
                 # Wrap into a Response object
                 return build_custom_http_response(
                     status_code=response.status_code,
@@ -267,8 +276,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 i2edge_response.raise_for_status()
         # TODO: Implement CAMARA-compliant error handling for failed onboarding responses
         except ValidationError as e:
-            log.error(f"Invalid CAMARA manifest: {e}")
-            raise ValueError(f"Invalid CAMARA manifest: {e}")
+            error_details = "; ".join(
+                [f"Field '{err['loc'][0]}': {err['msg']}" for err in e.errors()]
+            )
+            log.error(f"Invalid CAMARA manifest: {error_details}")
+            raise ValueError(f"Invalid CAMARA manifest: {error_details}")
         except I2EdgeError as e:
             log.error(f"Failed to onboard app to i2Edge: {e}")
             raise

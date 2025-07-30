@@ -190,8 +190,8 @@ def test_deploy_app(app_instance_id):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
-def test_timer_wait_10_seconds(edgecloud_client):
-    time.sleep(10)
+def test_timer_wait_30_seconds(edgecloud_client):
+    time.sleep(30)
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
