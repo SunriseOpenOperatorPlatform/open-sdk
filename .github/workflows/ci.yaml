@@ -46,7 +46,7 @@ jobs:
       run: isort src tests --check --profile black --filter-files
 
     - name: black check
-      run: black src tests --check
+      run: black src tests --check --line-length=100
 
     - name: flake8 check
       run: flake8 src tests

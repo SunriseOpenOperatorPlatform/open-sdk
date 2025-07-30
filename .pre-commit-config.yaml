@@ -19,6 +19,7 @@ repos:
         args:
             # - "--check"
             - "--target-version=py310"
+            - "--line-length=100"
 -   repo: https://github.com/pycqa/flake8
     rev: 7.2.0
     hooks:
