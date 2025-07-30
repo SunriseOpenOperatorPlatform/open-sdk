@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sunrise6g-opensdk"
-version = "1.0.2.post4"
+version = "1.0.3"
 description = "Open source SDK to abstract CAMARA/GSMA Transformation Functions (TFs) for Edge Cloud platforms, 5G network cores and Open RAN solutions."
 keywords = [
   "Federation",
