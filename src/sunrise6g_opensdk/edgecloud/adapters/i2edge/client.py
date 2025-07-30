@@ -456,9 +456,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             zoneInfo=i2edge_schemas.ZoneInfoRef(flavourId=self.flavour_id, zoneId=zone_id),
         )
         url = "{}/application_instance".format(self.base_url)
-        payload = i2edge_schemas.AppDeploy(
-            app_deploy_data=app_deploy_data, app_parameters={"namespace": "test"}
-        )
+        payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
 
         # Deployment request to i2Edge
         try:
@@ -497,6 +495,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             log.error(f"Failed to deploy app to i2Edge: {e}")
             raise
 
+    # FIXME: Update return type to Response
     def get_all_deployed_apps(self) -> List[Dict]:
         """
         Retrieves information of all application instances.
@@ -515,6 +514,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
+        # FIXME: Update return type to Response
+
+    # FIXME: Update return type to Response
     def get_deployed_app(self, app_id, zone_id) -> List[Dict]:
         """
         Retrieves a specific deployed application instance by app ID and zone ID.

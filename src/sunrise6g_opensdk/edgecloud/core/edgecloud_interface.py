@@ -37,8 +37,8 @@ class EdgeCloudManagementInterface(ABC):
         :param status: Filter by status (active, inactive, unknown).
         :return: List of Edge Cloud Zones.
         """
-        # TODO: Evaluate if the CAMARA-input format
-        # TODO: Evaluate the CAMARA-return format
+        # TODO: Evaluate if we can check here the input (it should be CAMARA-compliant)
+        # TODO: Evaluate if we can check here the response (it should be CAMARA-compliant)
         pass
 
     # --------------------------------------------------------------------
@@ -88,15 +88,16 @@ class EdgeCloudManagementInterface(ABC):
     @abstractmethod
     def deploy_app(self, app_id: str, app_zones: List[Dict]) -> Response:
         """
-        Requests the instantiation of an application instance.
+        Requests the instantiation of an application instance
 
-        :param app_id: Unique identifier of the application.
+        :param app_id: Unique identifier of the application
         :param app_zones: List of Edge Cloud Zones where the app should be
         instantiated.
-        :return: Response with instance details.
+        :return: Response with instance details
         """
         pass
 
+    # FIXME: Update return type to Response
     @abstractmethod
     def get_all_deployed_apps(
         self,
@@ -105,15 +106,16 @@ class EdgeCloudManagementInterface(ABC):
         region: Optional[str] = None,
     ) -> List[Dict]:
         """
-        Retrieves information of application instances.
+        Retrieves information of application instances
 
-        :param app_id: Filter by application ID.
-        :param app_instance_id: Filter by instance ID.
-        :param region: Filter by Edge Cloud region.
-        :return: List of application instance details.
+        :param app_id: Filter by application ID
+        :param app_instance_id: Filter by instance ID
+        :param region: Filter by Edge Cloud region
+        :return: List of application instance details
         """
         pass
 
+    # FIXME: Update return type to Response
     @abstractmethod
     def undeploy_app(self, app_instance_id: str) -> Response:
         """
@@ -133,11 +135,11 @@ class EdgeCloudManagementInterface(ABC):
     # --------------------------------------------------------------------
 
     @abstractmethod
-    def get_edge_cloud_zones_list_gsma(self) -> List:
+    def get_edge_cloud_zones_list_gsma(self) -> Response:
         """
         Retrieves list of all Zones
 
-        :return: List.
+        :return: Response with Edge Cloud Zones
         """
         pass
 
@@ -246,46 +248,46 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     @abstractmethod
-    def deploy_app_gsma(self, request_body: dict) -> Dict:
+    def deploy_app_gsma(self, request_body: dict) -> Response:
         """
         Create deployed Application.
 
         :param request_body: Payload with deployment info.
-        :return: Dictionary with deployment details.
+        :return: Response with deployment details.
         """
         pass
 
     @abstractmethod
-    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Dict:
+    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
         Retrieves an application instance details from partner OP.
 
         :param app_id: Identifier of the app.
         :param app_instance_id: Identifier of the deployed instance.
         :param zone_id: Identifier of the zone
-        :return: Dictionary with application instance details
+        :return: Response with application instance details
         """
         pass
 
     @abstractmethod
-    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> List:
+    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Response:
         """
         Retrieves all instances for a given application of partner OP
 
         :param app_id: Identifier of the app.
         :param app_provider: App provider
-        :return: List with application instances details
+        :return: Response with application instances details
         """
         pass
 
     @abstractmethod
-    def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str):
+    def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
         Terminate an application instance on a partner OP zone.
 
         :param app_id: Identifier of the app.
         :param app_instance_id: Identifier of the deployed app.
         :param zone_id: Identifier of the zone
-        :return:
+        :return: Response with undeployment confirmation
         """
         pass
