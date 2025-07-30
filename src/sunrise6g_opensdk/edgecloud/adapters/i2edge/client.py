@@ -868,31 +868,27 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
 
-    def patch_onboarded_app_gsma(
-        self, federation_context_id: str, app_id: str, request_body: dict
-    ) -> Response:
+    def patch_onboarded_app_gsma(self, app_id: str, request_body: dict) -> Response:
         """
         Updates partner OP about changes in application compute resource requirements,
         QOS Profile, associated descriptor or change in associated components using GSMA federation.
 
-        :param federation_context_id: Identifier of the federation context.
         :param app_id: Identifier of the application onboarded.
         :param request_body: Payload with updated onboarding info.
         :return: Response with update confirmation.
         """
         pass
 
-    def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Response:
+    def delete_onboarded_app_gsma(self, app_id: str) -> Response:
         """
         Deboards an application from specific partner OP zones using GSMA federation.
 
-        :param federation_context_id: Identifier of the federation context.
         :param app_id: Identifier of the application onboarded.
         :return: Response with deboarding confirmation.
         """
         try:
             response = self.delete_onboarded_app(app_id)
-            if response.status_code == 200:
+            if response.status_code == 204:
                 return build_custom_http_response(
                     status_code=200,
                     content={"response": "App deletion successful"},
@@ -909,14 +905,10 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     # Application Deployment Management (GSMA)
     # ------------------------------------------------------------------------
 
-    def deploy_app_gsma(
-        self, federation_context_id: str, idempotency_key: str, request_body: dict
-    ) -> Response:
+    def deploy_app_gsma(self, request_body: dict) -> Response:
         """
         Instantiates an application on a partner OP zone using GSMA federation.
 
-        :param federation_context_id: Identifier of the federation context.
-        :param idempotency_key: Idempotency key for request deduplication.
         :param request_body: Payload with deployment information.
         :return: Response with deployment details.
         """
@@ -928,7 +920,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 appId=body.get("appId"),
                 appProviderId=body.get("appProviderId"),
                 appVersion=body.get("appVersion"),
-                zoneInfo=i2edge_schemas.ZoneInfo(flavourId=flavour_id, zoneId=zone_id),
+                zoneInfo=i2edge_schemas.ZoneInfoRef(flavourId=flavour_id, zoneId=zone_id),
             )
             payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
