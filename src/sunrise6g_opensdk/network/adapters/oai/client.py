@@ -107,9 +107,7 @@ class NetworkManager(BaseNetworkClient):
             traffic_influence_info.device is None
             or traffic_influence_info.device.ipv4Address is None
         ):
-            raise OaiValidationError(
-                "OAI requires UE IPv4 Address to activate Traffic Influence"
-            )
+            raise OaiValidationError("OAI requires UE IPv4 Address to activate Traffic Influence")
 
 
 def _retrieve_ue_ipv4(session_info: CreateSession):
@@ -120,9 +118,7 @@ def _retrieve_app_ipv4(session_info: CreateSession):
     return session_info.applicationServer.ipv4Address
 
 
-def _add_qod_flow_descriptor(
-    qos_sub: AsSessionWithQoSSubscription, flow_desriptor: str
-):
+def _add_qod_flow_descriptor(qos_sub: AsSessionWithQoSSubscription, flow_desriptor: str):
     qos_sub.flowInfo = list()
     qos_sub.flowInfo.append(
         FlowInfo(flowId=len(qos_sub.flowInfo) + 1, flowDescriptions=[flow_desriptor])

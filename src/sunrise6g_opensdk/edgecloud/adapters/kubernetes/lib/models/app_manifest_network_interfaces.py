@@ -84,9 +84,7 @@ class AppManifestNetworkInterfaces(Model):
         :type interface_id: str
         """
         if interface_id is None:
-            raise ValueError(
-                "Invalid value for `interface_id`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `interface_id`, must not be `None`")  # noqa: E501
 
         self._interface_id = interface_id
 
@@ -141,9 +139,7 @@ class AppManifestNetworkInterfaces(Model):
         :type port: int
         """
         if port is None:
-            raise ValueError(
-                "Invalid value for `port`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `port`, must not be `None`")  # noqa: E501
 
         self._port = port
 

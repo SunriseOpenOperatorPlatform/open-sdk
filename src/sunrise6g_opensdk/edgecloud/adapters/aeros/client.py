@@ -53,9 +53,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             raise EdgeCloudPlatformError("Missing 'appId' in app manifest")
 
         if app_id in self._app_store:
-            raise EdgeCloudPlatformError(
-                f"Application with id '{app_id}' already exists"
-            )
+            raise EdgeCloudPlatformError(f"Application with id '{app_id}' already exists")
 
         self._app_store[app_id] = app_manifest
         self.logger.debug("Onboarded application with id: %s", app_id)
@@ -67,17 +65,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
     def get_onboarded_app(self, app_id: str) -> Dict:
         if app_id not in self._app_store:
-            raise EdgeCloudPlatformError(
-                f"Application with id '{app_id}' does not exist"
-            )
+            raise EdgeCloudPlatformError(f"Application with id '{app_id}' does not exist")
         self.logger.debug("Retrieved application with id: %s", app_id)
         return self._app_store[app_id]
 
     def delete_onboarded_app(self, app_id: str) -> None:
         if app_id not in self._app_store:
-            raise EdgeCloudPlatformError(
-                f"Application with id '{app_id}' does not exist"
-            )
+            raise EdgeCloudPlatformError(f"Application with id '{app_id}' does not exist")
         service_instances = self._stopped_services.get(app_id, [])
         self.logger.debug(
             "Deleting application with id: %s and instances: %s",
@@ -86,29 +80,21 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         )
         for service_instance in service_instances:
             self._purge_deployed_app_from_continuum(service_instance)
-            self.logger.debug(
-                "successfully purged service instance: %s", service_instance
-            )
+            self.logger.debug("successfully purged service instance: %s", service_instance)
         del self._stopped_services[app_id]  # Clean up stopped services
         del self._app_store[app_id]  # Remove from onboarded apps
 
     def _generate_service_id(self, app_id: str) -> str:
         return f"urn:ngsi-ld:Service:{app_id}-{uuid.uuid4().hex[:4]}"
 
-    def _generate_tosca_yaml_dict(
-        self, app_manifest: Dict, app_zones: List[Dict]
-    ) -> Dict:
+    def _generate_tosca_yaml_dict(self, app_manifest: Dict, app_zones: List[Dict]) -> Dict:
         component = app_manifest.get("componentSpec", [{}])[0]
         component_name = component.get("componentName", "application")
 
         image_path = app_manifest.get("appRepo", {}).get("imagePath", "")
         image_file = image_path.split("/")[-1]
-        repository_url = (
-            "/".join(image_path.split("/")[:-1]) if "/" in image_path else "docker_hub"
-        )
-        zone_id = (
-            app_zones[0].get("EdgeCloudZone", {}).get("edgeCloudZoneId", "default-zone")
-        )
+        repository_url = "/".join(image_path.split("/")[:-1]) if "/" in image_path else "docker_hub"
+        zone_id = app_zones[0].get("EdgeCloudZone", {}).get("edgeCloudZoneId", "default-zone")
 
         # Extract minNodeMemory
         min_node_memory = (
@@ -124,9 +110,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             interface_id = iface.get("interfaceId", "default")
             protocol = iface.get("protocol", "TCP").lower()
             port = iface.get("port", 8080)
-            ports[interface_id] = {
-                "properties": {"protocol": [protocol], "source": port}
-            }
+            ports[interface_id] = {"properties": {"protocol": [protocol], "source": port}}
 
         expose_ports = any(
             iface.get("visibilityType") == "VISIBILITY_EXTERNAL"
@@ -159,13 +143,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                                                 "properties": {
                                                     "cpu_arch": {"equal": "x64"},
                                                     "realtime": {"equal": False},
-                                                    "cpu_usage": {
-                                                        "less_or_equal": "0.1"
-                                                    },
+                                                    "cpu_usage": {"less_or_equal": "0.1"},
                                                     "mem_size": {
-                                                        "greater_or_equal": str(
-                                                            min_node_memory
-                                                        )
+                                                        "greater_or_equal": str(min_node_memory)
                                                     },
                                                     "domain_id": {"equal": zone_id},
                                                 }
@@ -203,9 +183,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         # 1. Get app CAMARA manifest
         app_manifest = self._app_store.get(app_id)
         if not app_manifest:
-            raise EdgeCloudPlatformError(
-                f"Application with id '{app_id}' does not exist"
-            )
+            raise EdgeCloudPlatformError(f"Application with id '{app_id}' does not exist")
 
         # 2. Generate unique service ID
         service_id = self._generate_service_id(app_id)
@@ -306,9 +284,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             for domain in aeros_domains
         ]
 
-    def get_edge_cloud_zones_details(
-        self, zone_id: str, flavour_id: Optional[str] = None
-    ) -> Dict:
+    def get_edge_cloud_zones_details(self, zone_id: str, flavour_id: Optional[str] = None) -> Dict:
         """
         Get details of a specific edge cloud zone.
         :param zone_id: The ID of the edge cloud zone
@@ -350,9 +326,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         #     #
         # }
         aeros_client = ContinuumClient(self.base_url)
-        ngsild_params = (
-            f'format=simplified&type=InfrastructureElement&q=domain=="{zone_id}"'
-        )
+        ngsild_params = f'format=simplified&type=InfrastructureElement&q=domain=="{zone_id}"'
         self.logger.debug(
             "Querying infrastructure elements for zone %s with params: %s",
             zone_id,
@@ -548,9 +522,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         pass
 
-    def get_deployed_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Dict:
+    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Dict:
         """
         Retrieves an application instance details from partner OP.
 

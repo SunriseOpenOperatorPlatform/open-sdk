@@ -26,10 +26,7 @@ def prepare_container(service_function, ser_function_):
     con_["application_ports"] = application_ports
 
     if service_function.all_node_ports is not None:
-        if (
-            service_function.all_node_ports is False
-            and service_function.node_ports is None
-        ):
+        if service_function.all_node_ports is False and service_function.node_ports is None:
             return (
                 "Please provide the application ports in the field exposed_ports or all_node_ports==true",
                 400,
@@ -70,9 +67,7 @@ def prepare_volumes(service_function, ser_function_, final_deploy_descriptor):
             vol_mount.append(volume_mounts.name)
     if len(vol_mount) != len(req_volumes):
         return (
-            "The selected service function requires "
-            + str(len(req_volumes))
-            + " volume/ volumes ",
+            "The selected service function requires " + str(len(req_volumes)) + " volume/ volumes ",
             400,
         )
     else:
@@ -128,9 +123,7 @@ def prepare_env_parameters(service_function, ser_function_, final_deploy_descrip
         )
     else:
         if ser_function_[0].get("required_env_parameters") is not None:
-            result = auxiliary_functions.equal_ignore_order(
-                req_env_parameters, env_names
-            )
+            result = auxiliary_functions.equal_ignore_order(req_env_parameters, env_names)
             if result is False:
                 return (
                     "The selected service function requires "
@@ -189,15 +182,11 @@ def deploy_service_function(
         return containers
     final_deploy_descriptor["containers"] = containers
 
-    vol_result = prepare_volumes(
-        service_function, ser_function_, final_deploy_descriptor
-    )
+    vol_result = prepare_volumes(service_function, ser_function_, final_deploy_descriptor)
     if vol_result is not None:
         return vol_result
 
-    env_result = prepare_env_parameters(
-        service_function, ser_function_, final_deploy_descriptor
-    )
+    env_result = prepare_env_parameters(service_function, ser_function_, final_deploy_descriptor)
     if env_result is not None:
         return env_result
 
@@ -211,14 +200,10 @@ def deploy_service_function(
     if "volumes" in final_deploy_descriptor:
         deployed_service_function_db["volumes"] = final_deploy_descriptor["volumes"]
     if "env_parameters" in final_deploy_descriptor:
-        deployed_service_function_db["env_parameters"] = final_deploy_descriptor[
-            "env_parameters"
-        ]
+        deployed_service_function_db["env_parameters"] = final_deploy_descriptor["env_parameters"]
 
     if "location" not in deployed_service_function_db:
-        deployed_service_function_db["location"] = (
-            "Node is selected by the K8s scheduler"
-        )
+        deployed_service_function_db["location"] = "Node is selected by the K8s scheduler"
     if type(response) is V1Deployment:
         deployed_service_function_db["_id"] = response.metadata.uid
         connector_db.insert_document_deployed_service_function(

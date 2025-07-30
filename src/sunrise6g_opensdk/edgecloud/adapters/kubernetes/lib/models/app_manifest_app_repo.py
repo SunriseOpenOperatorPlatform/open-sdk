@@ -100,9 +100,7 @@ class AppManifestAppRepo(Model):
         allowed_values = ["PRIVATEREPO", "PUBLICREPO"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}".format(
-                    type, allowed_values
-                )
+                "Invalid value for `type` ({0}), must be one of {1}".format(type, allowed_values)
             )
 
         self._type = type
@@ -126,9 +124,7 @@ class AppManifestAppRepo(Model):
         :type image_path: Uri
         """
         if image_path is None:
-            raise ValueError(
-                "Invalid value for `image_path`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `image_path`, must not be `None`")  # noqa: E501
 
         self._image_path = image_path
 

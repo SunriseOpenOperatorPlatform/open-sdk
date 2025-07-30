@@ -92,9 +92,7 @@ class NetworkInterface(BaseModel):
 
 
 class ComponentSpecItem(BaseModel):
-    componentName: str = Field(
-        ..., description="Component name must be unique with an application"
-    )
+    componentName: str = Field(..., description="Component name must be unique with an application")
     networkInterfaces: List[NetworkInterface] = Field(
         ...,
         description='Each application component exposes some ports\neither for external users or for inter component\ncommunication.\nApplication provider is required to specify which ports are\nto be exposed and the type of traffic that will flow through\nthese ports.The underlying platform may assign a dynamic port\nagainst the "extPort" that the application clients will use\nto connect with edge application instance.\n',
@@ -109,9 +107,7 @@ class AppProvider(RootModel[constr(pattern=r"^[A-Za-z][A-Za-z0-9_]{7,63}$")]):
 
 
 class EdgeCloudProvider(RootModel[str]):
-    root: str = Field(
-        ..., description="Human readable name of the Edge Cloud Provider."
-    )
+    root: str = Field(..., description="Human readable name of the Edge Cloud Provider.")
 
 
 class EdgeCloudRegion(RootModel[str]):
@@ -142,17 +138,13 @@ class EdgeCloudZoneStatus(Enum):
 
 
 class ErrorInfo(BaseModel):
-    status: int = Field(
-        ..., description="HTTP status code returned along with this error response"
-    )
+    status: int = Field(..., description="HTTP status code returned along with this error response")
     code: str = Field(..., description="Code given to this error")
     message: str = Field(..., description="Detailed error description")
 
 
 class Fqdn(RootModel[str]):
-    root: str = Field(
-        ..., description="Full qualified domain name of an application instance\n"
-    )
+    root: str = Field(..., description="Full qualified domain name of an application instance\n")
 
 
 class GpuInfo(BaseModel):
@@ -170,12 +162,8 @@ class K8sAddons(BaseModel):
 
 
 class PrimaryNetwork(BaseModel):
-    provider: Optional[str] = Field(
-        None, description="CNI provider name", examples=["cilium"]
-    )
-    version: Optional[str] = Field(
-        None, description="CNI provider version", examples=["1.13"]
-    )
+    provider: Optional[str] = Field(None, description="CNI provider name", examples=["cilium"])
+    version: Optional[str] = Field(None, description="CNI provider version", examples=["1.13"])
 
 
 class InterfaceType(Enum):
@@ -185,9 +173,7 @@ class InterfaceType(Enum):
 
 
 class AdditionalNetwork(BaseModel):
-    name: Optional[str] = Field(
-        None, description="Additional Network Name", examples=["net1"]
-    )
+    name: Optional[str] = Field(None, description="Additional Network Name", examples=["net1"])
     interfaceType: Optional[InterfaceType] = Field(
         None,
         description="Type of additional Interface:\nnetdevice: (SR-IOV) A regular kernel network device in the\n           Network Namespace (netns) of the container\nvfio-pci: (SR-IOV) A PCI network interface directly mounted\n          in the container\ninterface: Additional interface to be used by cni plugins\n           such as macvlan, ipvlan\nNote: The use of SR-IOV interfaces automatically\nconfigure the required kernel parameters for the nodes.\n",
@@ -241,9 +227,7 @@ class KubernetesClusterRef(RootModel[UUID]):
 
 
 class NodeResources(BaseModel):
-    numCPU: int = Field(
-        ..., description="Number of whole vcpus for the node.\n", examples=[2]
-    )
+    numCPU: int = Field(..., description="Number of whole vcpus for the node.\n", examples=[2])
     memory: int = Field(
         ...,
         description="Amount of system memory in mega bytes for the node.\n",
@@ -252,18 +236,14 @@ class NodeResources(BaseModel):
 
 
 class KubernetesNodePool(BaseModel):
-    name: str = Field(
-        ..., description="Human readable name of the Kubernetes Node Pool."
-    )
+    name: str = Field(..., description="Human readable name of the Kubernetes Node Pool.")
     numNodes: int = Field(..., description="Number of nodes in the Node Pool.")
     scalable: bool = Field(
         ...,
         description="Indicates if the node pool can be dynamically scaled up by the\nsystem to accomodate more applications, and dynamically scaled\ndown by the system when there are unused resources.\n",
         examples=[False],
     )
-    nodeResources: NodeResources = Field(
-        ..., description="Resource configuration of a node."
-    )
+    nodeResources: NodeResources = Field(..., description="Resource configuration of a node.")
 
 
 class InfraKind(Enum):
@@ -294,9 +274,7 @@ class CpuPool(BaseModel):
         description="Total number of vcpus in whole (i.e 1) of CPU pool.\n",
         examples=[1],
     )
-    memory: int = Field(
-        ..., description="Total memory in mega bytes of CPU pool.", examples=[1024]
-    )
+    memory: int = Field(..., description="Total memory in mega bytes of CPU pool.", examples=[1024])
     topology: Topology = Field(
         ...,
         description="CPU pool topology defines an application's CPU-based\narchitecture.\nWhen deploying for high availability or redundancy, it\nallows for clustering with a configurable number of nodes\nand minimum CPU/memory resource per Kubernetes node\nrequirements.\n",
@@ -332,9 +310,7 @@ class GpuPool(BaseModel):
         description="Total Number of vcpus in whole (i.e 1) of GPU pool.\n",
         examples=[1],
     )
-    memory: int = Field(
-        ..., description="Total memory in mega bytes of GPU pool.", examples=[1024]
-    )
+    memory: int = Field(..., description="Total memory in mega bytes of GPU pool.", examples=[1024])
     gpuMemory: int = Field(
         ..., description="Total GPU memory in giga bytes of GPU pool.", examples=[16]
     )
@@ -392,9 +368,7 @@ class VmResources(BaseModel):
         description="Type of infrastructure for the application.",
         examples=["virtualMachine"],
     )
-    numCPU: int = Field(
-        ..., description="Number of vcpus in whole (i.e 1)\n", examples=[1]
-    )
+    numCPU: int = Field(..., description="Number of vcpus in whole (i.e 1)\n", examples=[1])
     memory: int = Field(..., description="Memory in mega bytes", examples=[1024])
     additionalStorages: Optional[AdditionalStorage] = None
     gpu: Optional[GpuInfo] = None
@@ -410,9 +384,7 @@ class DockerComposeResources(BaseModel):
         description="Type of infrastructure for the application.",
         examples=["dockerCompose"],
     )
-    numCPU: int = Field(
-        ..., description="Number of vcpus in whole (i.e 1)\n", examples=[1]
-    )
+    numCPU: int = Field(..., description="Number of vcpus in whole (i.e 1)\n", examples=[1])
     memory: int = Field(..., description="Memory in mega bytes", examples=[1024])
     storage: Optional[AdditionalStorage] = None
     gpu: Optional[GpuInfo] = None
@@ -490,18 +462,14 @@ class Port(RootModel[conint(ge=0)]):
 
 
 class RequiredResources(
-    RootModel[
-        Union[
-            KubernetesResources, VmResources, ContainerResources, DockerComposeResources
-        ]
-    ]
+    RootModel[Union[KubernetesResources, VmResources, ContainerResources, DockerComposeResources]]
 ):
-    root: Union[
-        KubernetesResources, VmResources, ContainerResources, DockerComposeResources
-    ] = Field(
-        ...,
-        description="Fundamental hardware requirements to be provisioned by the\nApplication Provider.\n",
-        discriminator="infraKind",
+    root: Union[KubernetesResources, VmResources, ContainerResources, DockerComposeResources] = (
+        Field(
+            ...,
+            description="Fundamental hardware requirements to be provisioned by the\nApplication Provider.\n",
+            discriminator="infraKind",
+        )
     )
 
 
@@ -550,9 +518,7 @@ class AccessEndpoint3(BaseModel):
     )
 
 
-class AccessEndpoint(
-    RootModel[Union[AccessEndpoint1, AccessEndpoint2, AccessEndpoint3]]
-):
+class AccessEndpoint(RootModel[Union[AccessEndpoint1, AccessEndpoint2, AccessEndpoint3]]):
     root: Union[AccessEndpoint1, AccessEndpoint2, AccessEndpoint3] = Field(
         ...,
         description="Application Endpoint for an especific instance that is\nrunning in an specific Edge Cloud Zone.\n",
@@ -616,9 +582,7 @@ class AppManifest(BaseModel):
     )
     appProvider: AppProvider
     version: str = Field(..., description="Application version information")
-    packageType: PackageType = Field(
-        ..., description="Format of the application image package"
-    )
+    packageType: PackageType = Field(..., description="Format of the application image package")
     operatingSystem: Optional[OperatingSystem] = None
     appRepo: AppRepo = Field(
         ...,
@@ -637,9 +601,7 @@ class ClusterInfo(BaseModel):
     clusterRef: KubernetesClusterRef
     edgeCloudZoneId: EdgeCloudZoneId
     edgeCloudRegion: Optional[EdgeCloudRegion] = None
-    version: Optional[str] = Field(
-        None, description="Kubernetes version of the cluster."
-    )
+    version: Optional[str] = Field(None, description="Kubernetes version of the cluster.")
     nodePools: Optional[List[KubernetesNodePool]] = Field(
         None, description="Node Pools in the cluster.", min_length=1
     )

@@ -18,9 +18,7 @@ from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from sunrise6g_opensdk.edgecloud.core.edgecloud_interface import (
     EdgeCloudManagementInterface,
 )
-from sunrise6g_opensdk.edgecloud.core.utils import (
-    build_custom_http_response,
-)
+from sunrise6g_opensdk.edgecloud.core.utils import build_custom_http_response
 
 from ...adapters.i2edge import schemas as i2edge_schemas
 from .common import (
@@ -78,13 +76,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     zone = camara_schemas.EdgeCloudZone(
                         # edgeCloudZoneId = camara_schemas.EdgeCloudZoneId(z["zoneId"]),
                         edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(z["zoneId"]),
-                        edgeCloudZoneName=camara_schemas.EdgeCloudZoneName(
-                            z["nodeName"]
-                        ),
+                        edgeCloudZoneName=camara_schemas.EdgeCloudZoneName(z["nodeName"]),
                         edgeCloudProvider=camara_schemas.EdgeCloudProvider("i2edge"),
-                        edgeCloudRegion=camara_schemas.EdgeCloudRegion(
-                            z["geographyDetails"]
-                        ),
+                        edgeCloudRegion=camara_schemas.EdgeCloudRegion(z["geographyDetails"]),
                         edgeCloudZoneStatus=camara_schemas.EdgeCloudZoneStatus.unknown,
                     )
                     camara_response.append(zone)
@@ -258,9 +252,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 i2edge_response.raise_for_status()
 
                 # Build CAMARA-compliant response using schema
-                submitted_app = camara_schemas.SubmittedApp(
-                    appId=camara_schemas.AppId(app_id)
-                )
+                submitted_app = camara_schemas.SubmittedApp(appId=camara_schemas.AppId(app_id))
 
                 log.info("App onboarded successfully")
                 return build_custom_http_response(
@@ -449,9 +441,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             appId=appId,
             appProviderId=appProviderId,
             appVersion=appVersion,
-            zoneInfo=i2edge_schemas.ZoneInfoRef(
-                flavourId=self.flavour_id, zoneId=zone_id
-            ),
+            zoneInfo=i2edge_schemas.ZoneInfoRef(flavourId=self.flavour_id, zoneId=zone_id),
         )
         url = "{}/application_instance".format(self.base_url)
         payload = i2edge_schemas.AppDeploy(
@@ -478,9 +468,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 )
 
                 # CAMARA spec requires appInstances array wrapper
-                camara_response = {
-                    "appInstances": [app_instance_info.model_dump(mode="json")]
-                }
+                camara_response = {"appInstances": [app_instance_info.model_dump(mode="json")]}
 
                 log.info("App deployment request submitted successfully")
                 return build_custom_http_response(
@@ -642,17 +630,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 for item in response_json:
                     content = {
                         "zoneId": item.get("zoneId"),
-                        "reservedComputeResources": item.get(
-                            "reservedComputeResources"
-                        ),
-                        "computeResourceQuotaLimits": item.get(
-                            "computeResourceQuotaLimits"
-                        ),
+                        "reservedComputeResources": item.get("reservedComputeResources"),
+                        "computeResourceQuotaLimits": item.get("computeResourceQuotaLimits"),
                         "flavoursSupported": item.get("flavoursSupported"),
                         "networkResources": item.get("networkResources"),
-                        "zoneServiceLevelObjsInfo": item.get(
-                            "zoneServiceLevelObjsInfo"
-                        ),
+                        "zoneServiceLevelObjsInfo": item.get("zoneServiceLevelObjsInfo"),
                     }
                     response_list.append(content)
                 return build_custom_http_response(
@@ -683,17 +665,11 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 response_json = response.json()
                 content = {
                     "zoneId": response_json.get("zoneId"),
-                    "reservedComputeResources": response_json.get(
-                        "reservedComputeResources"
-                    ),
-                    "computeResourceQuotaLimits": response_json.get(
-                        "computeResourceQuotaLimits"
-                    ),
+                    "reservedComputeResources": response_json.get("reservedComputeResources"),
+                    "computeResourceQuotaLimits": response_json.get("computeResourceQuotaLimits"),
                     "flavoursSupported": response_json.get("flavoursSupported"),
                     "networkResources": response_json.get("networkResources"),
-                    "zoneServiceLevelObjsInfo": response_json.get(
-                        "zoneServiceLevelObjsInfo"
-                    ),
+                    "zoneServiceLevelObjsInfo": response_json.get("zoneServiceLevelObjsInfo"),
                 }
                 return build_custom_http_response(
                     status_code=200,
@@ -894,9 +870,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         pass
 
-    def delete_onboarded_app_gsma(
-        self, federation_context_id: str, app_id: str
-    ) -> Response:
+    def delete_onboarded_app_gsma(self, federation_context_id: str, app_id: str) -> Response:
         """
         Deboards an application from specific partner OP zones using GSMA federation.
 
@@ -965,9 +939,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Missing required field in GSMA deployment payload: {e}")
 
-    def get_deployed_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Response:
+    def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
         Retrieves an application instance details from partner OP using GSMA federation.
 
@@ -977,9 +949,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :return: Response with application instance details.
         """
         try:
-            url = "{}/application_instance/{}/{}".format(
-                self.base_url, zone_id, app_instance_id
-            )
+            url = "{}/application_instance/{}/{}".format(self.base_url, zone_id, app_instance_id)
             params = {}
             response = i2edge_get(url, params=params)
             if response.status_code == 200:
@@ -1042,9 +1012,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except KeyError as e:
             raise I2EdgeError(f"Error retrieving apps: {e}")
 
-    def undeploy_app_gsma(
-        self, app_id: str, app_instance_id: str, zone_id: str
-    ) -> Response:
+    def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
         Terminate an application instance on a partner OP zone.
 
@@ -1059,9 +1027,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             if response.status_code == 200:
                 return build_custom_http_response(
                     status_code=200,
-                    content={
-                        "response": "Application instance termination request accepted"
-                    },
+                    content={"response": "Application instance termination request accepted"},
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,

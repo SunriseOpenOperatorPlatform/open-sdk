@@ -56,9 +56,7 @@ class Sdk:
             base_url = config["base_url"]
 
             # Support of additional paramaters for specific adapters
-            kwargs = {
-                k: v for k, v in config.items() if k not in ("client_name", "base_url")
-            }
+            kwargs = {k: v for k, v in config.items() if k not in ("client_name", "base_url")}
 
             client = sdk_client.instantiate_and_retrieve_adapters(
                 domain, client_name, base_url, **kwargs

@@ -50,12 +50,8 @@ def _network_adapters_factory(client_name: str, base_url: str, **kwargs):
     scs_as_id = kwargs.pop("scs_as_id")
 
     network_factory = {
-        "open5gs": lambda url, scs_id, **kw: Open5GSClient(
-            base_url=url, scs_as_id=scs_id, **kw
-        ),
-        "oai": lambda url, scs_id, **kw: OaiCoreClient(
-            base_url=url, scs_as_id=scs_id, **kw
-        ),
+        "open5gs": lambda url, scs_id, **kw: Open5GSClient(base_url=url, scs_as_id=scs_id, **kw),
+        "oai": lambda url, scs_id, **kw: OaiCoreClient(base_url=url, scs_as_id=scs_id, **kw),
         "open5gcore": lambda url, scs_id, **kw: Open5GCoreClient(
             base_url=url, scs_as_id=scs_id, **kw
         ),

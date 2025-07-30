@@ -98,9 +98,7 @@ def onboard_app_with(
         raise e
 
 
-def delete_app_instance_by(
-    namespace: str, flavour_id: str, zone_id: str, i2edge: I2EdgeClient
-):
+def delete_app_instance_by(namespace: str, flavour_id: str, zone_id: str, i2edge: I2EdgeClient):
     i2edge_app_instance_name = get_app_name_from(namespace, i2edge)
     if i2edge_app_instance_name is None:
         err_msg = "Couldn't retrieve app instance from I2Edge."

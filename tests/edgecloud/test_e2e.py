@@ -60,9 +60,7 @@ def test_config_camara_compliance(edgecloud_client):
         # Validate APP_ONBOARD_MANIFEST is CAMARA-compliant
         if "APP_ONBOARD_MANIFEST" in config:
             app_manifest = config["APP_ONBOARD_MANIFEST"]
-            camara_schemas.AppManifest(
-                **app_manifest
-            )  # Validate against CAMARA AppManifest schema
+            camara_schemas.AppManifest(**app_manifest)
 
         # Validate APP_DEPLOY_PAYLOAD is CAMARA-compliant
         if "APP_DEPLOY_PAYLOAD" in config:

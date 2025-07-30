@@ -64,10 +64,7 @@ class KubernetesConnector:
             try:
                 self.api_instance.get_api_group()
             except ApiException as e:
-                print(
-                    "Exception when calling AdmissionregistrationApi->get_api_group: %s\n"
-                    % e
-                )
+                print("Exception when calling AdmissionregistrationApi->get_api_group: %s\n" % e)
 
     def get_node_details(self):
         try:
@@ -95,9 +92,7 @@ class KubernetesConnector:
                 "Exception when calling CoreV1Api->/api/v1/namespaces/sunrise6g/persistentvolumeclaims: %s\n"
                 % e
             )
-        k8s_nodes = self.api_custom.list_cluster_custom_object(
-            "metrics.k8s.io", "v1beta1", "nodes"
-        )
+        k8s_nodes = self.api_custom.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "nodes")
 
         # client.models.v1_node_list.V1NodeList
         # kubernetes.client.models.v1_node_list.V1NodeList\
@@ -112,12 +107,8 @@ class KubernetesConnector:
                 pop_output["nodeLocation"] = pop["metadata"]["labels"]["location"]
 
                 node_addresses = {}
-                node_addresses["nodeHostName"] = pop["status"]["addresses"][1][
-                    "address"
-                ]
-                node_addresses["nodeExternalIP"] = pop["status"]["addresses"][0][
-                    "address"
-                ]
+                node_addresses["nodeHostName"] = pop["status"]["addresses"][1]["address"]
+                node_addresses["nodeExternalIP"] = pop["status"]["addresses"][0]["address"]
                 node_addresses["nodeInternalIP"] = pop["metadata"]["annotations"].get(
                     "projectcalico.org/IPv4VXLANTunnelAddr"
                 )
@@ -144,18 +135,14 @@ class KubernetesConnector:
                 pop_output["nodeCapacity"] = node_capacity
 
                 node_allocatable_resources = {}
-                node_allocatable_resources["nodeCPUCap"] = pop["status"]["allocatable"][
-                    "cpu"
-                ]
+                node_allocatable_resources["nodeCPUCap"] = pop["status"]["allocatable"]["cpu"]
                 memory = pop["status"]["allocatable"]["memory"]
                 memory_size = len(memory)
                 node_allocatable_resources["nodeMemoryCap"] = memory[: memory_size - 2]
                 node_allocatable_resources["nodeMemoryCapMU"] = memory[-2:]
                 storage = pop["status"]["allocatable"]["ephemeral-storage"]
                 storage_size = len(storage)
-                node_allocatable_resources["nodeStorageCap"] = storage[
-                    : storage_size - 2
-                ]
+                node_allocatable_resources["nodeStorageCap"] = storage[: storage_size - 2]
                 node_allocatable_resources["nodeStorageCapMU"] = storage[-2:]
                 # node_allocatable_resources["nodeMaxNoofPods"] = pop['status']['allocatable']['pods']
                 pop_output["nodeAllocatableResources"] = node_allocatable_resources
@@ -171,9 +158,9 @@ class KubernetesConnector:
 
                         node_usage["nodeMemoryInUse"] = memory[: memory_size - 2]
                         node_usage["nodeMemoryInUseMU"] = memory[-2:]
-                        node_usage["nodeMemoryUsage"] = int(
-                            node_usage["nodeMemoryInUse"]
-                        ) / int(node_capacity["nodeMemoryCap"])
+                        node_usage["nodeMemoryUsage"] = int(node_usage["nodeMemoryInUse"]) / int(
+                            node_capacity["nodeMemoryCap"]
+                        )
                         node_usage["nodeCPUInUse"] = cpu[: cpu_size - 1]
                         node_usage["nodeCPUInUseMU"] = cpu[-1:]
                         node_usage["nodeCPUUsage"] = int(node_usage["nodeCPUInUse"]) / (
@@ -186,15 +173,11 @@ class KubernetesConnector:
                 node_general_info["nodeKubernetesVersion"] = pop["status"]["nodeInfo"][
                     "kernelVersion"
                 ]
-                node_general_info["nodecontainerRuntimeVersion"] = pop["status"][
-                    "nodeInfo"
-                ]["containerRuntimeVersion"]
-                node_general_info["nodeKernelVersion"] = pop["status"]["nodeInfo"][
-                    "kernelVersion"
+                node_general_info["nodecontainerRuntimeVersion"] = pop["status"]["nodeInfo"][
+                    "containerRuntimeVersion"
                 ]
-                node_general_info["nodeArchitecture"] = pop["status"]["nodeInfo"][
-                    "architecture"
-                ]
+                node_general_info["nodeKernelVersion"] = pop["status"]["nodeInfo"]["kernelVersion"]
+                node_general_info["nodeArchitecture"] = pop["status"]["nodeInfo"]["architecture"]
                 pop_output["nodeGeneralInfo"] = node_general_info
 
         return pop_output
@@ -212,9 +195,7 @@ class KubernetesConnector:
                 pop_["serial"] = node.status.addresses[0].address
                 pop_["node_type"] = node.metadata.labels.get("node_type")
                 pop_["status"] = (
-                    "active"
-                    if node.status.conditions[-1].status == "True"
-                    else "inactive"
+                    "active" if node.status.conditions[-1].status == "True" else "inactive"
                 )
                 # pop_= NodesResponse(id=uid,name=name,location=location,serial=address, node_type=node_type, status=ready_status)
                 pops_.append(pop_)
@@ -237,14 +218,10 @@ class KubernetesConnector:
             name=service_function_name, namespace=self.namespace
         )
 
-        self.v1.delete_namespaced_service(
-            name=service_function_name, namespace=self.namespace
-        )
+        self.v1.delete_namespaced_service(name=service_function_name, namespace=self.namespace)
 
-        hpa_list = (
-            self.api_instance_v1autoscale.list_namespaced_horizontal_pod_autoscaler(
-                self.namespace
-            )
+        hpa_list = self.api_instance_v1autoscale.list_namespaced_horizontal_pod_autoscaler(
+            self.namespace
         )
 
         # hpas=hpa_list["items"]
@@ -307,9 +284,7 @@ class KubernetesConnector:
                             descriptor_service_function["name"], volume
                         )
                         headers = {"Authorization": "Bearer " + self.token_k8s}
-                        requests.post(
-                            url, headers=headers, json=body_volume, verify=False
-                        )
+                        requests.post(url, headers=headers, json=body_volume, verify=False)
                     except requests.exceptions.HTTPError as e:
                         # logging.error(traceback.format_exc())
                         return (
@@ -323,10 +298,8 @@ class KubernetesConnector:
         body_service = self.create_service(descriptor_service_function)
 
         try:
-            api_response_deployment = (
-                self.api_instance_appsv1.create_namespaced_deployment(
-                    self.namespace, body_deployment
-                )
+            api_response_deployment = self.api_instance_appsv1.create_namespaced_deployment(
+                self.namespace, body_deployment
             )
             # api_response_service = api_instance_apiregv1.create_api_service(body_service)
             self.v1.create_namespaced_service(self.namespace, body_service)
@@ -360,9 +333,7 @@ class KubernetesConnector:
             security_context = self._get_security_context(container)
             ports = self._get_container_ports(container)
             envs = self._get_env_vars(descriptor_service_function)
-            volumes, volume_mounts = self._get_volumes_and_mounts(
-                descriptor_service_function
-            )
+            volumes, volume_mounts = self._get_volumes_and_mounts(descriptor_service_function)
 
             if "autoscaling_policies" in descriptor_service_function:
                 resources = self._get_resource_requirements(descriptor_service_function)
@@ -388,9 +359,7 @@ class KubernetesConnector:
                 )
             containers.append(con)
 
-        template_spec_ = self._get_pod_spec(
-            descriptor_service_function, containers, volumes
-        )
+        template_spec_ = self._get_pod_spec(descriptor_service_function, containers, volumes)
         template = client.V1PodTemplateSpec(metadata=metadata_spec, spec=template_spec_)
 
         spec = client.V1DeploymentSpec(
@@ -467,32 +436,22 @@ class KubernetesConnector:
             and descriptor_service_function["volumes"] is not None
         ):
             for volume in descriptor_service_function["volumes"]:
-                vol_name = (
-                    str(descriptor_service_function["name"]) + "-" + volume["name"]
-                )
+                vol_name = str(descriptor_service_function["name"]) + "-" + volume["name"]
                 if volume.get("hostpath") is None:
-                    pvc = client.V1PersistentVolumeClaimVolumeSource(
-                        claim_name=vol_name
-                    )
-                    volume_ = client.V1Volume(
-                        name=vol_name, persistent_volume_claim=pvc
-                    )
+                    pvc = client.V1PersistentVolumeClaimVolumeSource(claim_name=vol_name)
+                    volume_ = client.V1Volume(name=vol_name, persistent_volume_claim=pvc)
                 else:
                     hostpath = client.V1HostPathVolumeSource(path=volume["hostpath"])
                     volume_ = client.V1Volume(name=vol_name, host_path=hostpath)
                 volumes.append(volume_)
-                volume_mount = client.V1VolumeMount(
-                    name=vol_name, mount_path=volume["path"]
-                )
+                volume_mount = client.V1VolumeMount(name=vol_name, mount_path=volume["path"])
                 volume_mounts.append(volume_mount)
         return volumes, volume_mounts
 
     def _get_resource_requirements(self, descriptor_service_function):
         limits_dict = {}
         request_dict = {}
-        for auto_scale_policy in descriptor_service_function.get(
-            "autoscaling_policies", []
-        ):
+        for auto_scale_policy in descriptor_service_function.get("autoscaling_policies", []):
             limits_dict[auto_scale_policy["metric"]] = auto_scale_policy["limit"]
             request_dict[auto_scale_policy["metric"]] = auto_scale_policy["request"]
         return client.V1ResourceRequirements(limits=limits_dict, requests=request_dict)
@@ -518,9 +477,7 @@ class KubernetesConnector:
     def create_service(self, descriptor_service_function):
         dict_label = {}
         dict_label[self.namespace] = descriptor_service_function["name"]
-        metadata = client.V1ObjectMeta(
-            name=descriptor_service_function["name"], labels=dict_label
-        )
+        metadata = client.V1ObjectMeta(name=descriptor_service_function["name"], labels=dict_label)
 
         #  spec
 
@@ -529,9 +486,7 @@ class KubernetesConnector:
         ):  # create NodePort svc object
             ports = []
             hepler = 0
-            for port_id in descriptor_service_function["containers"][0][
-                "exposed_ports"
-            ]:
+            for port_id in descriptor_service_function["containers"][0]["exposed_ports"]:
 
                 # if "grafana" in descriptor_service_function["name"]:
                 #     ports_=client.V1ServicePort(port=port_id,
@@ -541,30 +496,18 @@ class KubernetesConnector:
                 #     ports_ = client.V1ServicePort(port=port_id,
                 #                                   # node_port=descriptor_paas["containers"][0]["exposed_ports"][hepler],
                 #                                   target_port=port_id, name=str(port_id))
-                ports_ = client.V1ServicePort(
-                    port=port_id, target_port=port_id, name=str(port_id)
-                )
+                ports_ = client.V1ServicePort(port=port_id, target_port=port_id, name=str(port_id))
                 ports.append(ports_)
                 hepler = hepler + 1
-            spec = client.V1ServiceSpec(
-                selector=dict_label, ports=ports, type="NodePort"
-            )
+            spec = client.V1ServiceSpec(selector=dict_label, ports=ports, type="NodePort")
             # body = client.V1Service(api_version="v1", kind="Service", metadata=metadata, spec=spec)
         else:  # create ClusterIP svc object
             ports = []
-            for port_id in descriptor_service_function["containers"][0][
-                "application_ports"
-            ]:
-                ports_ = client.V1ServicePort(
-                    port=port_id, target_port=port_id, name=str(port_id)
-                )
+            for port_id in descriptor_service_function["containers"][0]["application_ports"]:
+                ports_ = client.V1ServicePort(port=port_id, target_port=port_id, name=str(port_id))
                 ports.append(ports_)
-            spec = client.V1ServiceSpec(
-                selector=dict_label, ports=ports, type="ClusterIP"
-            )
-        body = client.V1Service(
-            api_version="v1", kind="Service", metadata=metadata, spec=spec
-        )
+            spec = client.V1ServiceSpec(selector=dict_label, ports=ports, type="ClusterIP")
+        body = client.V1Service(api_version="v1", kind="Service", metadata=metadata, spec=spec)
 
         return body
 
@@ -578,9 +521,7 @@ class KubernetesConnector:
         kind = ("PersistentVolumeClaim",)
         spec = client.V1PersistentVolumeClaimSpec(
             access_modes=["ReadWriteMany"],
-            resources=client.V1ResourceRequirements(
-                requests={"storage": volumes["storage"]}
-            ),
+            resources=client.V1ResourceRequirements(requests={"storage": volumes["storage"]}),
         )
         body = client.V1PersistentVolumeClaim(
             api_version="v1", kind=kind, metadata=metadata, spec=spec
@@ -588,9 +529,7 @@ class KubernetesConnector:
 
         return body
 
-    def create_pvc_dict(
-        self, name, volumes, storage_class="microk8s-hostpath", volume_name=None
-    ):
+    def create_pvc_dict(self, name, volumes, storage_class="microk8s-hostpath", volume_name=None):
         name_vol = name + str("-") + volumes["name"]
         # body={}
         # body["api_version"]="v1"
@@ -693,9 +632,7 @@ class KubernetesConnector:
 
         dict_label = {}
         dict_label["name"] = descriptor_service_function["name"]
-        metadata = client.V1ObjectMeta(
-            name=descriptor_service_function["name"], labels=dict_label
-        )
+        metadata = client.V1ObjectMeta(name=descriptor_service_function["name"], labels=dict_label)
 
         #  spec
 
@@ -724,9 +661,7 @@ class KubernetesConnector:
         return body
 
     def get_deployed_dataspace_connector(self, instance_name):
-        api_response = self.api_instance_appsv1.list_namespaced_deployment(
-            self.namespace
-        )
+        api_response = self.api_instance_appsv1.list_namespaced_deployment(self.namespace)
 
         api_response_service = self.v1.list_namespaced_service(self.namespace)
         app_ = {}
@@ -743,9 +678,7 @@ class KubernetesConnector:
 
             if app_:  # if app_ is not empty
 
-                if (status.available_replicas is not None) and (
-                    status.ready_replicas is not None
-                ):
+                if (status.available_replicas is not None) and (status.ready_replicas is not None):
                     if status.available_replicas >= 1 and status.ready_replicas >= 1:
                         app_["status"] = "running"
                         app_["replicas"] = status.ready_replicas
@@ -783,37 +716,25 @@ class KubernetesConnector:
 
     def get_deployed_service_functions(self, connector_db: ConnectorDB):
         self.get_deployed_hpas(connector_db)
-        api_response = self.api_instance_appsv1.list_namespaced_deployment(
-            self.namespace
-        )
+        api_response = self.api_instance_appsv1.list_namespaced_deployment(self.namespace)
         api_response_service = self.v1.list_namespaced_service(self.namespace)
-        api_response_pvc = self.v1.list_namespaced_persistent_volume_claim(
-            self.namespace
-        )
+        api_response_pvc = self.v1.list_namespaced_persistent_volume_claim(self.namespace)
 
-        apps_col = connector_db.get_documents_from_collection(
-            collection_input="service_functions"
-        )
+        apps_col = connector_db.get_documents_from_collection(collection_input="service_functions")
         deployed_apps_col = connector_db.get_documents_from_collection(
             collection_input="deployed_service_functions"
         )
-        nodes = connector_db.get_documents_from_collection(
-            collection_input="points_of_presence"
-        )
+        nodes = connector_db.get_documents_from_collection(collection_input="points_of_presence")
 
         apps = []
         for app in api_response.items:
-            app_ = self._build_app_dict(
-                app, apps_col, deployed_apps_col, api_response_pvc, nodes
-            )
+            app_ = self._build_app_dict(app, apps_col, deployed_apps_col, api_response_pvc, nodes)
             if app_:
                 self._add_service_ports(app_, api_response_service)
                 apps.append(app_)
         return apps
 
-    def _build_app_dict(
-        self, app, apps_col, deployed_apps_col, api_response_pvc, nodes
-    ):
+    def _build_app_dict(self, app, apps_col, deployed_apps_col, api_response_pvc, nodes):
         metadata = app.metadata
         spec = app.spec
         status = app.status
@@ -843,10 +764,7 @@ class KubernetesConnector:
                 for volume in app_col["required_volumes"]:
                     for item in api_response_pvc.items:
                         name_v = str("-") + volume["name"]
-                        if (
-                            name_v in item.metadata.name
-                            and metadata.name in item.metadata.name
-                        ):
+                        if name_v in item.metadata.name and metadata.name in item.metadata.name:
                             volumes_.append(item.metadata.name)
                             app_["volumes"] = volumes_
                             break
@@ -856,9 +774,7 @@ class KubernetesConnector:
             return None
 
         # Set status and replicas
-        if (status.available_replicas is not None) and (
-            status.ready_replicas is not None
-        ):
+        if (status.available_replicas is not None) and (status.ready_replicas is not None):
             if status.available_replicas >= 1 and status.ready_replicas >= 1:
                 app_["status"] = "running"
                 app_["replicas"] = status.ready_replicas
@@ -906,10 +822,8 @@ class KubernetesConnector:
 
     def get_deployed_hpas(self, connector_db: ConnectorDB):
         # APPV1 Implementation!
-        api_response = (
-            self.api_instance_v1autoscale.list_namespaced_horizontal_pod_autoscaler(
-                self.namespace
-            )
+        api_response = self.api_instance_v1autoscale.list_namespaced_horizontal_pod_autoscaler(
+            self.namespace
         )
 
         hpas = []
@@ -921,9 +835,7 @@ class KubernetesConnector:
             deployed_hpas_col = connector_db.get_documents_from_collection(
                 collection_input="deployed_apps"
             )
-            apps_col = connector_db.get_documents_from_collection(
-                collection_input="paas_services"
-            )
+            apps_col = connector_db.get_documents_from_collection(collection_input="paas_services")
 
             actual_name = None
             for hpa_col in deployed_hpas_col:
@@ -972,9 +884,7 @@ class KubernetesConnector:
         return hpas
 
     def is_job_completed(self, job_name):
-        job = self.api_instance_batchv1.read_namespaced_job(
-            name=job_name, namespace=self.namespace
-        )
+        job = self.api_instance_batchv1.read_namespaced_job(name=job_name, namespace=self.namespace)
         if job.status.succeeded is not None and job.status.succeeded > 0:
             return True
         return False
@@ -1014,9 +924,7 @@ class KubernetesConnector:
 
     def immediate_storage_class_exists(self):
         try:
-            storage_classes = (
-                self.api_instance_storagev1api.list_storage_class().items()
-            )
+            storage_classes = self.api_instance_storagev1api.list_storage_class().items()
 
             for sc in storage_classes:
                 if sc.metadata.name == "immediate-storageclass":

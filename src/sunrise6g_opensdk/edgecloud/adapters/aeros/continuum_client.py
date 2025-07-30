@@ -151,9 +151,7 @@ class ContinuumClient:
         onboard_url = f"{self.api_url}/hlo_fe/services/{service_id}"
         if config.DEBUG:
             self.logger.debug("Onboard service URL: %s", onboard_url)
-            self.logger.debug(
-                "Onboard service request body (TOSCA-YAML): %s", tosca_str
-            )
+            self.logger.debug("Onboard service request body (TOSCA-YAML): %s", tosca_str)
         response = requests.post(
             onboard_url, data=tosca_str, headers=self.hlo_onboard_headers, timeout=15
         )

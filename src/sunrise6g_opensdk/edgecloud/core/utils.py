@@ -27,9 +27,7 @@ def build_custom_http_response(
     response.status_code = status_code
     if isinstance(content, (dict, list)):
         content = json.dumps(content)
-    response._content = (
-        content.encode(encoding or "utf-8") if isinstance(content, str) else content
-    )
+    response._content = content.encode(encoding or "utf-8") if isinstance(content, str) else content
     response.headers.update(headers or {})
     response.encoding = encoding or "utf-8"
     if url:

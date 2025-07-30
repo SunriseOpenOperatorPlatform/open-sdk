@@ -114,9 +114,7 @@ class AppManifest(Model):
         :type name: str
         """
         if name is None:
-            raise ValueError(
-                "Invalid value for `name`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
         self._name = name
 
@@ -141,9 +139,7 @@ class AppManifest(Model):
         :type version: int
         """
         if version is None:
-            raise ValueError(
-                "Invalid value for `version`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `version`, must not be `None`")  # noqa: E501
 
         self._version = version
 
@@ -217,9 +213,7 @@ class AppManifest(Model):
         :type app_repo: AppManifestAppRepo
         """
         if app_repo is None:
-            raise ValueError(
-                "Invalid value for `app_repo`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `app_repo`, must not be `None`")  # noqa: E501
 
         self._app_repo = app_repo
 
@@ -269,8 +263,6 @@ class AppManifest(Model):
         :type component_spec: List[AppManifestComponentSpec]
         """
         if component_spec is None:
-            raise ValueError(
-                "Invalid value for `component_spec`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `component_spec`, must not be `None`")  # noqa: E501
 
         self._component_spec = component_spec

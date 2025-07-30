@@ -41,9 +41,7 @@ class Hugepages(BaseModel):
 class GPU(BaseModel):
     gpuMemory: int = Field(default=0, description="GPU memory in MB")
     gpuModeName: str = Field(default="", description="GPU mode name")
-    gpuVendorType: str = Field(
-        default="GPU_PROVIDER_NVIDIA", description="GPU vendor type"
-    )
+    gpuVendorType: str = Field(default="GPU_PROVIDER_NVIDIA", description="GPU vendor type")
     numGPU: int = Field(..., description="Number of GPUs")
 
 

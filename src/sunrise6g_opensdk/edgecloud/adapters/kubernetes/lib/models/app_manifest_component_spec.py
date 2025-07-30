@@ -74,9 +74,7 @@ class AppManifestComponentSpec(Model):
         :type component_name: str
         """
         if component_name is None:
-            raise ValueError(
-                "Invalid value for `component_name`, must not be `None`"
-            )  # noqa: E501
+            raise ValueError("Invalid value for `component_name`, must not be `None`")  # noqa: E501
 
         self._component_name = component_name
 
@@ -92,9 +90,7 @@ class AppManifestComponentSpec(Model):
         return self._network_interfaces
 
     @network_interfaces.setter
-    def network_interfaces(
-        self, network_interfaces: List[AppManifestNetworkInterfaces]
-    ):
+    def network_interfaces(self, network_interfaces: List[AppManifestNetworkInterfaces]):
         """Sets the network_interfaces of this AppManifestComponentSpec.
 
         Each application component exposes some ports either for external users or for inter component communication. Application provider is required to specify which ports are to be exposed and the type of traffic that will flow through these ports.The underlying platform may assign a dynamic port against the \"extPort\" that the application clients will use to connect with edge application instance.   # noqa: E501

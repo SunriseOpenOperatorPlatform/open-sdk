@@ -82,9 +82,7 @@ class ConnectorDB:
                 insert_doc["scaling_type"] = document["scaling_type"]
             #
             if "monitoring_service_URL" in document:
-                insert_doc["monitoring_service_URL"] = document[
-                    "monitoring_service_URL"
-                ]
+                insert_doc["monitoring_service_URL"] = document["monitoring_service_URL"]
 
             if "paas_name" in document:
                 insert_doc["paas_name"] = document["paas_name"]
@@ -175,9 +173,7 @@ class ConnectorDB:
     #     else:
     #         return "Service function not found in the catalogue"
 
-    def delete_document_service_function(
-        self, service_function_input_name=None, _id: str = None
-    ):
+    def delete_document_service_function(self, service_function_input_name=None, _id: str = None):
 
         # _id = ObjectId(_id)
         collection = "service_functions"

@@ -15,9 +15,7 @@ class ServicesQuery(Model):
     Do not edit the class manually.
     """
 
-    def __init__(
-        self, service_consumer_id: str = None, query_string: str = None
-    ):  # noqa: E501
+    def __init__(self, service_consumer_id: str = None, query_string: str = None):  # noqa: E501
         """ServicesQuery - a model defined in Swagger
 
         :param service_consumer_id: The service_consumer_id of this ServicesQuery.  # noqa: E501
