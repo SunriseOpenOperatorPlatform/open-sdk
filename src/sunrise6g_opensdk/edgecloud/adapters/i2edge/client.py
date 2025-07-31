@@ -109,7 +109,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     # ------------------------------------------------------------------------
     # Artefact Management (i2Edge-Specific, Non-CAMARA)
     # ------------------------------------------------------------------------
-    # TODO: Evaluate if artefact-related functions should return Response
+    # All artefact methods now return Response objects for API consistency
 
     def create_artefact(
         self,
@@ -121,7 +121,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         password: Optional[str] = None,
         token: Optional[str] = None,
         user_name: Optional[str] = None,
-    ):
+    ) -> Response:
         """
         Creates an artefact in the i2Edge platform.
         This is an i2Edge-specific operation not covered by CAMARA standards.
@@ -158,13 +158,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_artefact(self, artefact_id: str) -> Dict:
+    def get_artefact(self, artefact_id: str) -> Response:
         """
         Retrieves details about a specific artefact.
         This is an i2Edge-specific operation not covered by CAMARA standards.
 
         :param artefact_id: Unique identifier of the artefact
-        :return: Dictionary with artefact details
+        :return: Response with artefact details
         """
         url = "{}/artefact/{}".format(self.base_url, artefact_id)
         params = {}
@@ -175,12 +175,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_all_artefacts(self) -> List[Dict]:
+    def get_all_artefacts(self) -> Response:
         """
         Retrieves a list of all artefacts.
         This is an i2Edge-specific operation not covered by CAMARA standards.
 
-        :return: List of artefact details
+        :return: Response with list of artefact details
         """
         url = "{}/artefact".format(self.base_url)
         params = {}
@@ -191,7 +191,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def delete_artefact(self, artefact_id: str):
+    def delete_artefact(self, artefact_id: str) -> Response:
         """
         Deletes a specific artefact from the i2Edge platform.
         This is an i2Edge-specific operation not covered by CAMARA standards.
