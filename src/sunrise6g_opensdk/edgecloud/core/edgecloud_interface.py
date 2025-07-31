@@ -97,25 +97,33 @@ class EdgeCloudManagementInterface(ABC):
         """
         pass
 
-    # FIXME: Update return type to Response
+    @abstractmethod
+    def get_deployed_app(self, app_instance_id: str) -> Response:
+        """
+        Retrieves information of a specific application instance
+
+        :param app_instance_id: Unique identifier of the application instance
+        :return: Response with application instance details
+        """
+        pass
+
     @abstractmethod
     def get_all_deployed_apps(
         self,
         app_id: Optional[str] = None,
         app_instance_id: Optional[str] = None,
         region: Optional[str] = None,
-    ) -> List[Dict]:
+    ) -> Response:
         """
         Retrieves information of application instances
 
         :param app_id: Filter by application ID
         :param app_instance_id: Filter by instance ID
         :param region: Filter by Edge Cloud region
-        :return: List of application instance details
+        :return: Response with application instance details
         """
         pass
 
-    # FIXME: Update return type to Response
     @abstractmethod
     def undeploy_app(self, app_instance_id: str) -> Response:
         """

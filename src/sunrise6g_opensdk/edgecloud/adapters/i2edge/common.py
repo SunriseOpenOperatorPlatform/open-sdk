@@ -37,16 +37,28 @@ def get_error_message_from(response: requests.Response) -> str:
         return response.text
 
 
-def i2edge_post(url: str, model_payload: BaseModel) -> dict:
+def i2edge_post(url: str, model_payload: BaseModel, expected_status: int = 201) -> dict:
     headers = {
         "Content-Type": "application/json",
         "accept": "application/json",
     }
     json_payload = json.dumps(model_payload.model_dump(mode="json", exclude_none=True))
+
+    # Debug: Log the payload being sent to i2Edge
+    log.debug(f"Sending payload to i2Edge: {json_payload}")
+
     try:
         response = requests.post(url, data=json_payload, headers=headers)
-        response.raise_for_status()
-        return response
+        if response.status_code == expected_status:
+            return response
+        else:
+            # Raise an error with meaningful message about status code mismatch
+            i2edge_err_msg = get_error_message_from(response)
+            err_msg = "Failed to post: Expected status {}, got {}. Detail: {}".format(
+                expected_status, response.status_code, i2edge_err_msg
+            )
+            log.error(err_msg)
+            raise I2EdgeError(err_msg)
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to deploy app: {}. Detail: {}".format(i2edge_err_msg, e)
@@ -88,13 +100,21 @@ def i2edge_post_multiform_data(url: str, model_payload: BaseModel) -> dict:
         raise I2EdgeError(err_msg)
 
 
-def i2edge_delete(url: str, id: str) -> dict:
+def i2edge_delete(url: str, id: str, expected_status: int = 200) -> dict:
     headers = {"accept": "application/json"}
     try:
         query = "{}/{}".format(url, id)
         response = requests.delete(query, headers=headers)
-        response.raise_for_status()
-        return response
+        if response.status_code == expected_status:
+            return response
+        else:
+            # Raise an error with meaningful message about status code mismatch
+            i2edge_err_msg = get_error_message_from(response)
+            err_msg = "Failed to delete: Expected status {}, got {}. Detail: {}".format(
+                expected_status, response.status_code, i2edge_err_msg
+            )
+            log.error(err_msg)
+            raise I2EdgeError(err_msg)
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to undeploy app: {}. Detail: {}".format(i2edge_err_msg, e)
@@ -102,12 +122,20 @@ def i2edge_delete(url: str, id: str) -> dict:
         raise I2EdgeError(err_msg)
 
 
-def i2edge_get(url: str, params: Optional[dict]):
+def i2edge_get(url: str, params: Optional[dict], expected_status: int = 200):
     headers = {"accept": "application/json"}
     try:
         response = requests.get(url, params=params, headers=headers)
-        response.raise_for_status()
-        return response
+        if response.status_code == expected_status:
+            return response
+        else:
+            # Raise an error with meaningful message about status code mismatch
+            i2edge_err_msg = get_error_message_from(response)
+            err_msg = "Failed to get: Expected status {}, got {}. Detail: {}".format(
+                expected_status, response.status_code, i2edge_err_msg
+            )
+            log.error(err_msg)
+            raise I2EdgeError(err_msg)
     except requests.exceptions.HTTPError as e:
         i2edge_err_msg = get_error_message_from(response)
         err_msg = "Failed to get apps: {}. Detail: {}".format(i2edge_err_msg, e)
