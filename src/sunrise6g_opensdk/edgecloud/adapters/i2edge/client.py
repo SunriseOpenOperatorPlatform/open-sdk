@@ -380,7 +380,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         name=app_metadata.get("appName", ""),
                         version=app_metadata.get("version", ""),
                         appProvider=profile_data.get("appProviderId", ""),
-                        # Hardcoding mandatory fields that doesn't exist in i2Edge
+                        # Hardcoding mandatory fields that don't exist in i2Edge
                         packageType="CONTAINER",
                         appRepo={"type": "PUBLICREPO", "imagePath": "not-available"},
                         requiredResources={
