@@ -684,7 +684,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             )
         except I2EdgeError as e:
             log.error(
-                f"Failed to retrieve app instance from i2Edge (zone_id: {target_zone_id if 'target_zone_id' in locals() else 'unknown'}): {e}"
+                f"Failed to retrieve app instance from i2Edge (zone_id: {target_zone_id}): {e}"
             )
             raise
 
