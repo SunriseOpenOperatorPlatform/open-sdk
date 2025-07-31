@@ -20,7 +20,7 @@ class AppId(RootModel[UUID]):
 
 
 class AppInstanceId(RootModel[UUID]):
-    root: str = Field(
+    root: UUID = Field(
         ...,
         description="A globally unique identifier associated with a running\ninstance of an application.\nEdge Cloud Platform generates this identifier when the\ninstantiation in the Edge Cloud Zone is successful.\n",
     )
