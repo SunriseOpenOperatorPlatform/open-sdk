@@ -622,7 +622,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         zones_data = (
                             zones_response.json()
                             if hasattr(zones_response, "json")
-                            else eval(zones_response.content.decode())
+                            else json.loads(zones_response.content.decode())
                         )
                         if zones_data and len(zones_data) > 0:
                             target_zone_id = zones_data[0].get("edgeCloudZoneId")
