@@ -195,6 +195,106 @@ def test_timer_wait_30_seconds(edgecloud_client):
 
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_get_onboarded_app(edgecloud_client):
+    """Test retrieving a specific onboarded application"""
+    config = CONFIG[edgecloud_client.client_name]
+    try:
+        app_id = config["APP_ID"]
+        response = edgecloud_client.get_onboarded_app(app_id)
+        assert isinstance(response, Response)
+        assert response.status_code == 200
+
+        app_data = response.json()
+        assert isinstance(app_data, dict)
+        assert "appManifest" in app_data
+
+        app_manifest = app_data["appManifest"]
+        assert app_manifest["appId"] == app_id
+        assert "name" in app_manifest
+        assert "version" in app_manifest
+        assert "appProvider" in app_manifest
+
+    except EdgeCloudPlatformError as e:
+        pytest.fail(f"Failed to get onboarded app: {e}")
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_get_all_onboarded_apps(edgecloud_client):
+    """Test retrieving all onboarded applications"""
+    try:
+        response = edgecloud_client.get_all_onboarded_apps()
+        assert isinstance(response, Response)
+        assert response.status_code == 200
+
+        apps_data = response.json()
+        assert isinstance(apps_data, list)
+
+        # Verify each app has required CAMARA fields
+        for app_manifest in apps_data:
+            assert "appId" in app_manifest
+            assert "name" in app_manifest
+            assert "version" in app_manifest
+            assert "appProvider" in app_manifest
+            assert "packageType" in app_manifest
+            assert "appRepo" in app_manifest
+            assert "requiredResources" in app_manifest
+            assert "componentSpec" in app_manifest
+
+    except EdgeCloudPlatformError as e:
+        pytest.fail(f"Failed to get all onboarded apps: {e}")
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_get_all_deployed_apps(edgecloud_client):
+    """Test retrieving all deployed application instances"""
+    try:
+        response = edgecloud_client.get_all_deployed_apps()
+        assert isinstance(response, Response)
+        assert response.status_code == 200
+
+        instances_data = response.json()
+        assert isinstance(instances_data, dict)
+        assert "appInstances" in instances_data
+        assert isinstance(instances_data["appInstances"], list)
+
+        # Verify each instance has required CAMARA fields
+        for instance in instances_data["appInstances"]:
+            assert "name" in instance
+            assert "appId" in instance
+            assert "appInstanceId" in instance
+            assert "appProvider" in instance
+            assert "status" in instance
+            assert "edgeCloudZoneId" in instance
+
+    except EdgeCloudPlatformError as e:
+        pytest.fail(f"Failed to get all deployed apps: {e}")
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
+def test_get_deployed_app(edgecloud_client, app_instance_id):
+    """Test retrieving a specific deployed application instance"""
+    try:
+        response = edgecloud_client.get_deployed_app(app_instance_id)
+        assert isinstance(response, Response)
+        assert response.status_code == 200
+
+        instance_data = response.json()
+        assert isinstance(instance_data, dict)
+        assert "appInstance" in instance_data
+
+        instance = instance_data["appInstance"]
+        assert instance["appInstanceId"] == app_instance_id
+        assert "name" in instance
+        assert "appId" in instance
+        assert "appProvider" in instance
+        assert "status" in instance
+        assert "edgeCloudZoneId" in instance
+
+    except EdgeCloudPlatformError as e:
+        pytest.fail(f"Failed to get deployed app: {e}")
+
+
+@pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_undeploy_app(edgecloud_client, app_instance_id):
     try:
         response = edgecloud_client.undeploy_app(app_instance_id)

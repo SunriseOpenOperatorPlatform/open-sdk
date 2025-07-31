@@ -7,6 +7,7 @@
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
 #   - César Cajas (cesar.cajas@i2cat.net)
 ##
+import json
 from copy import deepcopy
 from typing import Dict, List, Optional
 
@@ -84,23 +85,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         params = {}
 
         try:
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response.raise_for_status()
-                i2edge_response = response.json()
-                log.info("Availability zones retrieved successfully")
-                # Normalise to CAMARA format
-                camara_response = [self._transform_to_camara_zone(z) for z in i2edge_response]
-                # Wrap into a Response object
-                return build_custom_http_response(
-                    status_code=response.status_code,
-                    content=[zone.model_dump(mode="json") for zone in camara_response],
-                    headers={"Content-Type": "application/json"},
-                    encoding=response.encoding,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
+            response = i2edge_get(url, params=params)  # expects 200 by default
+            i2edge_response = response.json()
+            log.info("Availability zones retrieved successfully")
+            # Normalise to CAMARA format
+            camara_response = [self._transform_to_camara_zone(z) for z in i2edge_response]
+            # Wrap into a Response object
+            return build_custom_http_response(
+                status_code=response.status_code,
+                content=[zone.model_dump(mode="json") for zone in camara_response],
+                headers={"Content-Type": "application/json"},
+                encoding=response.encoding,
+                url=response.url,
+                request=response.request,
+            )
         except KeyError as e:
             log.error(f"Missing required CAMARA field in app manifest: {e}")
             raise ValueError(f"Invalid CAMARA manifest – missing field: {e}")
@@ -111,6 +109,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     # ------------------------------------------------------------------------
     # Artefact Management (i2Edge-Specific, Non-CAMARA)
     # ------------------------------------------------------------------------
+    # All artefact methods now return Response objects for API consistency
 
     def create_artefact(
         self,
@@ -122,7 +121,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         password: Optional[str] = None,
         token: Optional[str] = None,
         user_name: Optional[str] = None,
-    ):
+    ) -> Response:
         """
         Creates an artefact in the i2Edge platform.
         This is an i2Edge-specific operation not covered by CAMARA standards.
@@ -159,13 +158,13 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_artefact(self, artefact_id: str) -> Dict:
+    def get_artefact(self, artefact_id: str) -> Response:
         """
         Retrieves details about a specific artefact.
         This is an i2Edge-specific operation not covered by CAMARA standards.
 
         :param artefact_id: Unique identifier of the artefact
-        :return: Dictionary with artefact details
+        :return: Response with artefact details
         """
         url = "{}/artefact/{}".format(self.base_url, artefact_id)
         params = {}
@@ -176,12 +175,12 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def get_all_artefacts(self) -> List[Dict]:
+    def get_all_artefacts(self) -> Response:
         """
         Retrieves a list of all artefacts.
         This is an i2Edge-specific operation not covered by CAMARA standards.
 
-        :return: List of artefact details
+        :return: Response with list of artefact details
         """
         url = "{}/artefact".format(self.base_url)
         params = {}
@@ -192,7 +191,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         except I2EdgeError as e:
             raise e
 
-    def delete_artefact(self, artefact_id: str):
+    def delete_artefact(self, artefact_id: str) -> Response:
         """
         Deletes a specific artefact from the i2Edge platform.
         This is an i2Edge-specific operation not covered by CAMARA standards.
@@ -255,26 +254,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             i2edge_response = i2edge_post(
                 f"{self.base_url}/application/onboarding",
                 model_payload=i2edge_payload,
+                expected_status=201,
             )
-            # OpenAPI specifies 201 for successful application onboarding
-            if i2edge_response.status_code == 201:
-                i2edge_response.raise_for_status()
+            # Build CAMARA-compliant response using schema
+            submitted_app = camara_schemas.SubmittedApp(appId=camara_schemas.AppId(app_id))
 
-                # Build CAMARA-compliant response using schema
-                submitted_app = camara_schemas.SubmittedApp(appId=camara_schemas.AppId(app_id))
-
-                log.info("App onboarded successfully")
-                return build_custom_http_response(
-                    status_code=i2edge_response.status_code,
-                    content=submitted_app.model_dump(mode="json"),
-                    headers={"Content-Type": "application/json"},
-                    encoding="utf-8",
-                    url=i2edge_response.url,
-                    request=i2edge_response.request,
-                )
-            else:
-                i2edge_response.raise_for_status()
-        # TODO: Implement CAMARA-compliant error handling for failed onboarding responses
+            log.info("App onboarded successfully")
+            return build_custom_http_response(
+                status_code=i2edge_response.status_code,
+                content=submitted_app.model_dump(mode="json"),
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=i2edge_response.url,
+                request=i2edge_response.request,
+            )
         except ValidationError as e:
             error_details = "; ".join(
                 [f"Field '{err['loc'][0]}': {err['msg']}" for err in e.errors()]
@@ -295,9 +288,8 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         url = "{}/application/onboarding".format(self.base_url)
         try:
-            response = i2edge_delete(url, app_id)
-            response.raise_for_status()
-
+            # i2Edge returns 200 for successful deletions, but CAMARA expects 204
+            response = i2edge_delete(url, app_id, expected_status=200)
             log.info("App onboarded deleted successfully")
             return build_custom_http_response(
                 status_code=204,
@@ -322,8 +314,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         url = "{}/application/onboarding/{}".format(self.base_url, app_id)
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            response.raise_for_status()
+            response = i2edge_get(url, params=params)  # expects 200 by default
             i2edge_response = response.json()
 
             # Extract and transform i2Edge response to CAMARA format
@@ -373,8 +364,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         url = "{}/applications/onboarding".format(self.base_url)
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            response.raise_for_status()
+            response = i2edge_get(url, params=params)  # expects 200 by default
             i2edge_response = response.json()
 
             # Transform i2Edge response to CAMARA format using AppManifest schema
@@ -390,6 +380,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         name=app_metadata.get("appName", ""),
                         version=app_metadata.get("version", ""),
                         appProvider=profile_data.get("appProviderId", ""),
+                        # Hardcoding mandatory fields that don't exist in i2Edge
                         packageType="CONTAINER",
                         appRepo={"type": "PUBLICREPO", "imagePath": "not-available"},
                         requiredResources={
@@ -456,105 +447,247 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             zoneInfo=i2edge_schemas.ZoneInfoRef(flavourId=self.flavour_id, zoneId=zone_id),
         )
         url = "{}/application_instance".format(self.base_url)
-        payload = i2edge_schemas.AppDeploy(
-            app_deploy_data=app_deploy_data, app_parameters={"namespace": "test"}
-        )
+        payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
 
-        # Deployment request to i2Edge
+        # Deployment request to i2Edge - CAMARA expects 202 for deployment
         try:
-            i2edge_response = i2edge_post(url, payload)
-            if i2edge_response.status_code == 202:
-                i2edge_response.raise_for_status()
-                i2edge_data = i2edge_response.json()
+            i2edge_response = i2edge_post(url, payload, expected_status=202)
+            i2edge_data = i2edge_response.json()
 
-                # Build CAMARA-compliant response
-                app_instance_id = i2edge_data.get("app_instance_id")
+            # Build CAMARA-compliant response
+            app_instance_id = i2edge_data.get("app_instance_id")
 
-                app_instance_info = camara_schemas.AppInstanceInfo(
-                    name=camara_schemas.AppInstanceName(app_instance_id),
-                    appId=camara_schemas.AppId(appId),
-                    appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
-                    appProvider=camara_schemas.AppProvider(appProviderId),
-                    status=camara_schemas.Status.instantiating,  # 202 means deployment is in progress
-                    edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(zone_id),
-                )
+            app_instance_info = camara_schemas.AppInstanceInfo(
+                name=camara_schemas.AppInstanceName(app_instance_id),
+                appId=camara_schemas.AppId(appId),
+                appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
+                appProvider=camara_schemas.AppProvider(appProviderId),
+                status=camara_schemas.Status.instantiating,  # 202 means deployment is in progress
+                edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(zone_id),
+            )
 
-                # CAMARA spec requires appInstances array wrapper
-                camara_response = {"appInstances": [app_instance_info.model_dump(mode="json")]}
+            # CAMARA spec requires appInstances array wrapper
+            camara_response = {"appInstances": [app_instance_info.model_dump(mode="json")]}
 
-                log.info("App deployment request submitted successfully")
-                return build_custom_http_response(
-                    status_code=i2edge_response.status_code,
-                    content=camara_response,
-                    headers={"Content-Type": "application/json"},
-                    encoding="utf-8",
-                    url=i2edge_response.url,
-                    request=i2edge_response.request,
-                )
-            else:
-                i2edge_response.raise_for_status()
+            log.info("App deployment request submitted successfully")
+            return build_custom_http_response(
+                status_code=i2edge_response.status_code,
+                content=camara_response,
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=i2edge_response.url,
+                request=i2edge_response.request,
+            )
         except I2EdgeError as e:
             log.error(f"Failed to deploy app to i2Edge: {e}")
             raise
 
-    def get_all_deployed_apps(self) -> List[Dict]:
+    def get_all_deployed_apps(
+        self,
+        app_id: Optional[str] = None,
+        app_instance_id: Optional[str] = None,
+        region: Optional[str] = None,
+    ) -> Response:
         """
-        Retrieves information of all application instances.
+        Retrieves information of all application instances using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response.
 
-        :return: List of application instance details
+        :param app_id: Filter by application ID
+        :param app_instance_id: Filter by instance ID
+        :param region: Filter by Edge Cloud region
+        :return: Response with application instance details in CAMARA format
         """
         url = "{}/application_instances".format(self.base_url)
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response.raise_for_status()
-                log.info("All app instances retrieved successfully")
-                return response.json()
-            return response
+            response = i2edge_get(url, params=params, expected_status=200)
+            i2edge_response = response.json()
+
+            # Transform i2Edge response to CAMARA format
+            camara_instances = []
+            if isinstance(i2edge_response, list):
+                for instance_data in i2edge_response:
+                    # Apply filters if provided
+                    if app_id and instance_data.get("app_id") != app_id:
+                        continue
+                    if app_instance_id and instance_data.get("app_instance_id") != app_instance_id:
+                        continue
+                    if region and instance_data.get("region") != region:
+                        continue
+
+                    # Transform to CAMARA AppInstanceInfo
+                    try:
+                        # Map i2Edge status to CAMARA status
+                        i2edge_status = instance_data.get("deploy_status", "unknown")
+                        camara_status = "ready" if i2edge_status == "DEPLOYED" else "unknown"
+
+                        # Extract zone_id from app_spec.nodeSelector
+                        zone_id = "unknown"
+                        app_spec = instance_data.get("app_spec", {})
+                        node_selector = app_spec.get("nodeSelector", {})
+                        if "feature.node.kubernetes.io/zoneID" in node_selector:
+                            zone_id = node_selector["feature.node.kubernetes.io/zoneID"]
+
+                        app_instance_info = camara_schemas.AppInstanceInfo(
+                            name=camara_schemas.AppInstanceName(
+                                instance_data.get("app_instance_id", "unknown")
+                            ),
+                            appId=camara_schemas.AppId(instance_data.get("app_id", "unknown")),
+                            appInstanceId=camara_schemas.AppInstanceId(
+                                instance_data.get("app_instance_id", "unknown")
+                            ),
+                            appProvider=camara_schemas.AppProvider(
+                                instance_data.get("app_provider", "Unknown_Provider")
+                            ),
+                            status=camara_schemas.Status(
+                                camara_status
+                            ),  # Map the i2Edge "DEPLOYED" status to the CAMARA "ready" status for consistency with CAMARA specifications.
+                            edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(
+                                zone_id
+                            ),  # FIX: Extract from nodeSelector
+                        )
+                        camara_instances.append(app_instance_info.model_dump(mode="json"))
+                    except Exception as validation_error:
+                        # Skip instances that fail validation
+                        log.warning(f"Skipping invalid instance data: {validation_error}")
+                        continue
+
+            # CAMARA spec format for multiple instances response
+            camara_response = {"appInstances": camara_instances}
+
+            log.info("All app instances retrieved successfully")
+            return build_custom_http_response(
+                status_code=response.status_code,
+                content=camara_response,
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to retrieve all app instances from i2Edge: {e}")
+            raise
 
-    def get_deployed_app(self, app_id, zone_id) -> List[Dict]:
+    def get_deployed_app(
+        self, app_instance_id: str, app_id: Optional[str] = None, region: Optional[str] = None
+    ) -> Response:
         """
-        Retrieves a specific deployed application instance by app ID and zone ID.
+        Retrieves information of a specific application instance using CAMARA-compliant interface.
+        Returns a CAMARA-compliant response.
 
-        :param app_id: Unique identifier of the application
-        :param zone_id: Unique identifier of the Edge Cloud Zone
-        :return: Application instance details or None if not found
+        :param app_instance_id: Unique identifier of the application instance (mandatory)
+        :param app_id: Optional filter by application ID for validation
+        :param region: Optional filter by Edge Cloud region for validation
+        :return: Response with application instance details in CAMARA format
         """
-        # Logic: Get all onboarded apps and filter the one where release_name == artifact name
-
-        # Step 1) Extract "app_name" from the onboarded app using the "app_id"
         try:
-            onboarded_app_response = self.get_onboarded_app(app_id)
-            onboarded_app_response.raise_for_status()
-            onboarded_app_data = onboarded_app_response.json()
+            # Get raw i2Edge data without CAMARA filtering to find the zone_id
+            url = "{}/application_instances".format(self.base_url)
+            raw_response = i2edge_get(url, params={}, expected_status=200)
+            raw_instances = raw_response.json()
+
+            # Find the specific instance in raw data to get its zone_id
+            target_zone_id = None
+            original_instance = None
+            if isinstance(raw_instances, list):
+                for instance_data in raw_instances:
+                    if instance_data.get("app_instance_id") == app_instance_id:
+                        # Optional validation: check app_id if provided
+                        if app_id and instance_data.get("app_id") != app_id:
+                            log.warning(
+                                f"App instance {app_instance_id} found but app_id mismatch: expected {app_id}, found {instance_data.get('app_id')}"
+                            )
+                            continue
+
+                        # Optional validation: check region if provided
+                        if region and instance_data.get("region") != region:
+                            log.warning(
+                                f"App instance {app_instance_id} found but region mismatch: expected {region}, found {instance_data.get('region')}"
+                            )
+                            continue
+
+                        target_zone_id = instance_data.get("zone_id")
+                        original_instance = instance_data
+                        break
+
+            # If instance not found in list, try to get a fallback zone dynamically
+            if not target_zone_id:
+                log.warning(
+                    f"App instance {app_instance_id} not found in instances list, attempting to find fallback zone"
+                )
+
+                # Try to get available zones and use the first one as fallback
+                try:
+                    zones_response = self.get_edge_cloud_zones()
+                    if zones_response.status_code == 200:
+                        zones_data = (
+                            zones_response.json()
+                            if hasattr(zones_response, "json")
+                            else json.loads(zones_response.content.decode())
+                        )
+                        if zones_data and len(zones_data) > 0:
+                            target_zone_id = zones_data[0].get("edgeCloudZoneId")
+                            log.info(f"Using fallback zone: {target_zone_id}")
+                        else:
+                            raise I2EdgeError("No available zones found for fallback")
+                    else:
+                        raise I2EdgeError(
+                            f"Failed to retrieve zones for fallback: {zones_response.status_code}"
+                        )
+                except Exception as zone_error:
+                    log.error(f"Could not retrieve fallback zone: {zone_error}")
+                    raise I2EdgeError(
+                        f"App instance {app_instance_id} not found and no fallback zone available"
+                    )
+
+                # Use provided app_id if available, otherwise mark as unknown since we don't have instance data
+                fallback_app_id = app_id if app_id else "unknown"
+                original_instance = {"app_id": fallback_app_id, "app_provider": "Unknown_Provider"}
+
+            # Now use the correct i2Edge endpoint with zone_id and app_instance_id
+            url = f"{self.base_url}/application_instance/{target_zone_id}/{app_instance_id}"
+            params = {}
+            response = i2edge_get(url, params=params, expected_status=200)
+            i2edge_response = response.json()
+
+            # The i2Edge response has different structure: {"accesspointInfo": [...], "appInstanceState": "DEPLOYED"}
+            # We need to map this to CAMARA format and get additional info from the raw instance data
+
+            # Transform i2Edge response to CAMARA format
+            app_instance_info = camara_schemas.AppInstanceInfo(
+                name=camara_schemas.AppInstanceName(app_instance_id),
+                appId=camara_schemas.AppId(
+                    original_instance.get("app_id") if original_instance else "unknown"
+                ),
+                appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
+                appProvider=camara_schemas.AppProvider(
+                    original_instance.get("app_provider", "Unknown_Provider")
+                    if original_instance
+                    else "Unknown_Provider"
+                ),
+                status=camara_schemas.Status(
+                    "ready" if i2edge_response.get("appInstanceState") == "DEPLOYED" else "unknown"
+                ),
+                edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(target_zone_id),
+            )
+
+            # CAMARA spec format for single instance response
+            camara_response = {"appInstance": app_instance_info.model_dump(mode="json")}
+
+            log.info("App instance retrieved successfully")
+            return build_custom_http_response(
+                status_code=response.status_code,
+                content=camara_response,
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            log.error(f"Failed to retrieve app data: {e}")
-            raise ValueError(f"No onboarded app found with ID: {app_id}")
-
-        try:
-            # Extract app name from CAMARA response format
-            app_name = onboarded_app_data.get("name", "")
-            if not app_name:
-                raise KeyError("name")
-        except KeyError as e:
-            raise ValueError(f"Onboarded app missing required field: {e}")
-
-        # Step 2) Retrieve all deployed apps and filter the one(s) where release_name == app_name
-        deployed_apps = self.get_all_deployed_apps()
-        if not deployed_apps:
-            return []
-
-        # Filter apps where release_name matches our app_name and zone matches
-        for app_instance_name in deployed_apps:
-            if (
-                app_instance_name.get("release_name") == app_name
-                and app_instance_name.get("zone_id") == zone_id
-            ):
-                return app_instance_name
-        return None
+            log.error(
+                f"Failed to retrieve app instance from i2Edge (zone_id: {target_zone_id}): {e}"
+            )
+            raise
 
     def undeploy_app(self, app_instance_id: str) -> Response:
         """
@@ -566,22 +699,19 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         url = "{}/application_instance".format(self.base_url)
         try:
-            i2edge_response = i2edge_delete(url, app_instance_id)
-            if i2edge_response.status_code == 200:
-                i2edge_response.raise_for_status()
+            # i2Edge returns 200 for successful deletions, but CAMARA expects 204
+            i2edge_response = i2edge_delete(url, app_instance_id, expected_status=200)
 
-                log.info("App instance deleted successfully")
-                # CAMARA-compliant 204 response (No Content for successful deletion)
-                return build_custom_http_response(
-                    status_code=204,
-                    content="",
-                    headers={"Content-Type": "application/json"},
-                    encoding="utf-8",
-                    url=i2edge_response.url,
-                    request=i2edge_response.request,
-                )
-            else:
-                i2edge_response.raise_for_status()
+            log.info("App instance deleted successfully")
+            # CAMARA-compliant 204 response (No Content for successful deletion)
+            return build_custom_http_response(
+                status_code=204,
+                content="",
+                headers={"Content-Type": "application/json"},
+                encoding="utf-8",
+                url=i2edge_response.url,
+                request=i2edge_response.request,
+            )
         except I2EdgeError as e:
             log.error(f"Failed to undeploy app from i2Edge: {e}")
             raise
