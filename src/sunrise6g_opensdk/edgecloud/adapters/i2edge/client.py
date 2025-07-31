@@ -7,6 +7,7 @@
 #   - Sergio Giménez (sergio.gimenez@i2cat.net)
 #   - César Cajas (cesar.cajas@i2cat.net)
 ##
+import json
 from copy import deepcopy
 from typing import Dict, List, Optional
 
