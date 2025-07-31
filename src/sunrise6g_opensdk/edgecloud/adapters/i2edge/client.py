@@ -541,7 +541,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                             ),
                             status=camara_schemas.Status(
                                 camara_status
-                            ),  # FIX: Map DEPLOYED -> ready
+                            ),  # Map the i2Edge "DEPLOYED" status to the CAMARA "ready" status for consistency with CAMARA specifications.
                             edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(
                                 zone_id
                             ),  # FIX: Extract from nodeSelector
