@@ -516,23 +516,34 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
                     # Transform to CAMARA AppInstanceInfo
                     try:
+                        # Map i2Edge status to CAMARA status
+                        i2edge_status = instance_data.get("deploy_status", "unknown")
+                        camara_status = "ready" if i2edge_status == "DEPLOYED" else "unknown"
+
+                        # Extract zone_id from app_spec.nodeSelector
+                        zone_id = "unknown"
+                        app_spec = instance_data.get("app_spec", {})
+                        node_selector = app_spec.get("nodeSelector", {})
+                        if "feature.node.kubernetes.io/zoneID" in node_selector:
+                            zone_id = node_selector["feature.node.kubernetes.io/zoneID"]
+
                         app_instance_info = camara_schemas.AppInstanceInfo(
                             name=camara_schemas.AppInstanceName(
                                 instance_data.get("app_instance_id", "unknown")
                             ),
-                            appId=camara_schemas.AppId(app_id),
+                            appId=camara_schemas.AppId(instance_data.get("app_id", "unknown")),
                             appInstanceId=camara_schemas.AppInstanceId(
                                 instance_data.get("app_instance_id", "unknown")
                             ),
                             appProvider=camara_schemas.AppProvider(
-                                instance_data.get("app_provider", "Unknown")
+                                instance_data.get("app_provider", "Unknown_Provider")
                             ),
                             status=camara_schemas.Status(
-                                instance_data.get("deploy_status", "Unknown")
-                            ),
+                                camara_status
+                            ),  # FIX: Map DEPLOYED -> ready
                             edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(
-                                instance_data.get("zone_id", "unknown")
-                            ),
+                                zone_id
+                            ),  # FIX: Extract from nodeSelector
                         )
                         camara_instances.append(app_instance_info.model_dump(mode="json"))
                     except Exception as validation_error:
@@ -598,20 +609,39 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         original_instance = instance_data
                         break
 
-            # If instance not found in list, try using the zone from config as fallback
+            # If instance not found in list, try to get a fallback zone dynamically
             if not target_zone_id:
-                # Use the zone_id from test config as fallback - this handles the case where
-                # the instance was just deployed and not yet visible in the instances list
-                target_zone_id = "f0662bfe-1d90-5f59-a759-c755b3b69b93"  # i2edge zone from config
                 log.warning(
-                    f"App instance {app_instance_id} not found in instances list, using fallback zone {target_zone_id}"
+                    f"App instance {app_instance_id} not found in instances list, attempting to find fallback zone"
                 )
 
-                # Use provided app_id if available, otherwise use fallback from config
-                fallback_app_id = (
-                    app_id if app_id else "9c9143f0-f44f-49df-939e-1e8b891ba8f5"
-                )  # from test config
-                original_instance = {"app_id": fallback_app_id, "app_provider": "i2CAT_DEV"}
+                # Try to get available zones and use the first one as fallback
+                try:
+                    zones_response = self.get_edge_cloud_zones()
+                    if zones_response.status_code == 200:
+                        zones_data = (
+                            zones_response.json()
+                            if hasattr(zones_response, "json")
+                            else eval(zones_response.content.decode())
+                        )
+                        if zones_data and len(zones_data) > 0:
+                            target_zone_id = zones_data[0].get("edgeCloudZoneId")
+                            log.info(f"Using fallback zone: {target_zone_id}")
+                        else:
+                            raise I2EdgeError("No available zones found for fallback")
+                    else:
+                        raise I2EdgeError(
+                            f"Failed to retrieve zones for fallback: {zones_response.status_code}"
+                        )
+                except Exception as zone_error:
+                    log.error(f"Could not retrieve fallback zone: {zone_error}")
+                    raise I2EdgeError(
+                        f"App instance {app_instance_id} not found and no fallback zone available"
+                    )
+
+                # Use provided app_id if available, otherwise mark as unknown since we don't have instance data
+                fallback_app_id = app_id if app_id else "unknown"
+                original_instance = {"app_id": fallback_app_id, "app_provider": "Unknown_Provider"}
 
             # Now use the correct i2Edge endpoint with zone_id and app_instance_id
             url = f"{self.base_url}/application_instance/{target_zone_id}/{app_instance_id}"
@@ -630,9 +660,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 ),
                 appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
                 appProvider=camara_schemas.AppProvider(
-                    original_instance.get("app_provider", "Unknown")
+                    original_instance.get("app_provider", "Unknown_Provider")
                     if original_instance
-                    else "Unknown"
+                    else "Unknown_Provider"
                 ),
                 status=camara_schemas.Status(
                     "ready" if i2edge_response.get("appInstanceState") == "DEPLOYED" else "unknown"

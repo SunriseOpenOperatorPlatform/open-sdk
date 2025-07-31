@@ -12,15 +12,17 @@ from uuid import UUID
 from pydantic import BaseModel, Field, RootModel, conint, constr
 
 
-class AppId(RootModel[UUID]):
-    root: UUID = Field(
+# FIXME: RootModel should only accept UUID. Limitation coming from i2Edge
+class AppId(RootModel[Union[UUID, str]]):
+    root: Union[UUID, str] = Field(
         ...,
         description="A globally unique identifier associated with the application.\nEdge Cloud Platform generates this identifier when the\nApplication is submitted.\n",
     )
 
 
-class AppInstanceId(RootModel[UUID]):
-    root: UUID = Field(
+# FIXME: RootModel should only accept UUID. Limitation coming from i2Edge
+class AppInstanceId(RootModel[Union[UUID, str]]):
+    root: Union[UUID, str] = Field(
         ...,
         description="A globally unique identifier associated with a running\ninstance of an application.\nEdge Cloud Platform generates this identifier when the\ninstantiation in the Edge Cloud Zone is successful.\n",
     )
