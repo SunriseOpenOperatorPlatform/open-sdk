@@ -9,6 +9,7 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import yaml
+from requests import Response
 
 from sunrise6g_opensdk.edgecloud.adapters.aeros import config
 from sunrise6g_opensdk.edgecloud.adapters.aeros.continuum_client import ContinuumClient
@@ -222,6 +223,21 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             for instance_id in instance_ids:
                 deployed.append({"appId": stored_app_id, "appInstanceId": instance_id})
         return deployed
+
+    def get_deployed_app(
+        self, app_instance_id: str, app_id: Optional[str] = None, region: Optional[str] = None
+    ) -> Response:
+        """
+        Placeholder implementation for CAMARA compliance.
+        Retrieves information of a specific application instance.
+
+        :param app_instance_id: Unique identifier of the application instance
+        :param app_id: Optional filter by application ID
+        :param region: Optional filter by Edge Cloud region
+        :return: Response with application instance details
+        """
+        # TODO: Implement actual aeros-specific logic for retrieving a specific deployed app
+        raise NotImplementedError("get_deployed_app is not yet implemented for aeros adapter")
 
     def _purge_deployed_app_from_continuum(self, app_id: str) -> None:
         aeros_client = ContinuumClient(self.base_url)

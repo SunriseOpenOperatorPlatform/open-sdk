@@ -3,6 +3,7 @@ import logging
 from typing import Dict, List, Optional
 
 from kubernetes.client import V1Deployment
+from requests import Response
 
 from sunrise6g_opensdk.edgecloud.adapters.kubernetes.lib.core.piedge_encoder import (
     deploy_service_function,
@@ -161,6 +162,21 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             response.append(item)
         return response
         # return [{"appInstanceId": "abcd-efgh", "status": "ready"}]
+
+    def get_deployed_app(
+        self, app_instance_id: str, app_id: Optional[str] = None, region: Optional[str] = None
+    ) -> Response:
+        """
+        Placeholder implementation for CAMARA compliance.
+        Retrieves information of a specific application instance.
+
+        :param app_instance_id: Unique identifier of the application instance
+        :param app_id: Optional filter by application ID
+        :param region: Optional filter by Edge Cloud region
+        :return: Response with application instance details
+        """
+        # TODO: Implement actual kubernetes-specific logic for retrieving a specific deployed app
+        raise NotImplementedError("get_deployed_app is not yet implemented for kubernetes adapter")
 
     def undeploy_app(self, app_instance_id: str) -> None:
         logging.info("Searching for deployed app with ID: " + app_instance_id + " in database...")
