@@ -40,7 +40,7 @@ Open source SDK to abstract CAMARA/GSMA Transformation Functions (TFs) for Edge 
 
 | API Name                  | Version |
 |---------------------------|---------|
-| Edge Application Management | [v0.9.3-wip](https://raw.githubusercontent.com/camaraproject/EdgeCloud/main/code/API_definitions/Edge-Application-Management.yaml) |
+| Edge Application Management | [v0.9.3-wip (Commit: 341025b)](https://raw.githubusercontent.com/camaraproject/EdgeCloud/main/code/API_definitions/Edge-Application-Management.yaml) |
 | Quality-on-Demand         | [v1.0.0](https://raw.githubusercontent.com/camaraproject/QualityOnDemand/refs/tags/r2.2/code/API_definitions/quality-on-demand.yaml) |
 | Location Retrieval        | [v0.4.0](https://raw.githubusercontent.com/camaraproject/DeviceLocation/refs/tags/r2.2/code/API_definitions/location-retrieval.yaml) |
 | Traffic Influence         | [v0.8.1](https://raw.githubusercontent.com/camaraproject/EdgeCloud/v0.8.1/code/API_definitions/Traffic_Influence.yaml) |
