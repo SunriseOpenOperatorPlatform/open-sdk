@@ -15,6 +15,7 @@ from pydantic import ValidationError
 from requests import Response
 
 from sunrise6g_opensdk import logger
+from sunrise6g_opensdk.edgecloud.core import gsma_schemas
 from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from sunrise6g_opensdk.edgecloud.core.edgecloud_interface import (
     EdgeCloudManagementInterface,
@@ -29,6 +30,7 @@ from .common import (
     i2edge_post,
     i2edge_post_multiform_data,
 )
+from .gsma_utils import map_zone
 
 log = logger.get_logger(__name__)
 
@@ -730,23 +732,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
         :return: Response with zone details in GSMA format.
         """
-        url = "{}/zones/list".format(self.base_url)
+        url = f"{self.base_url}/zones/list"
         params = {}
         try:
             response = i2edge_get(url, params=params)
             if response.status_code == 200:
                 response_json = response.json()
-                response_list = []
-                for item in response_json:
-                    content = {
-                        "zoneId": item.get("zoneId"),
-                        "geolocation": item.get("geolocation"),
-                        "geographyDetails": item.get("geographyDetails"),
-                    }
-                    response_list.append(content)
+                try:
+                    validated_data = gsma_schemas.ZonesList.model_validate(response_json)
+                except ValidationError as e:
+                    raise ValueError(f"Response from /zones/list is not a valid schema: {e}")
+
                 return build_custom_http_response(
                     status_code=200,
-                    content=response_list,
+                    content=[zone.model_dump() for zone in validated_data.root],
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
@@ -762,26 +761,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
         :return: Response with zones and detailed resource information.
         """
-        url = "{}/zones".format(self.base_url)
+        url = f"{self.base_url}/zones"
         params = {}
         try:
             response = i2edge_get(url, params=params)
             if response.status_code == 200:
                 response_json = response.json()
-                response_list = []
-                for item in response_json:
-                    content = {
-                        "zoneId": item.get("zoneId"),
-                        "reservedComputeResources": item.get("reservedComputeResources"),
-                        "computeResourceQuotaLimits": item.get("computeResourceQuotaLimits"),
-                        "flavoursSupported": item.get("flavoursSupported"),
-                        "networkResources": item.get("networkResources"),
-                        "zoneServiceLevelObjsInfo": item.get("zoneServiceLevelObjsInfo"),
-                    }
-                    response_list.append(content)
+                mapped = [map_zone(zone) for zone in response_json]
+                try:
+                    validated_data = gsma_schemas.ZoneRegisteredDataList.model_validate(mapped)
+                except ValidationError as e:
+                    raise ValueError(f"Invalid response schema from /zones: {e}")
                 return build_custom_http_response(
                     status_code=200,
-                    content=response_list,
+                    content=validated_data.model_dump(),
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
@@ -799,23 +792,20 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :param zone_id: Unique identifier of the Edge Cloud Zone.
         :return: Response with Edge Cloud Zone details.
         """
-        url = "{}/zone/{}".format(self.base_url, zone_id)
+        url = f"{self.base_url}/zone/{zone_id}"
         params = {}
         try:
             response = i2edge_get(url, params=params)
             if response.status_code == 200:
                 response_json = response.json()
-                content = {
-                    "zoneId": response_json.get("zoneId"),
-                    "reservedComputeResources": response_json.get("reservedComputeResources"),
-                    "computeResourceQuotaLimits": response_json.get("computeResourceQuotaLimits"),
-                    "flavoursSupported": response_json.get("flavoursSupported"),
-                    "networkResources": response_json.get("networkResources"),
-                    "zoneServiceLevelObjsInfo": response_json.get("zoneServiceLevelObjsInfo"),
-                }
+                mapped = map_zone(response_json)
+                try:
+                    validated_data = gsma_schemas.ZoneRegisteredData.model_validate(mapped)
+                except ValidationError as e:
+                    raise ValueError(f"Invalid response schema from /zones/{zone_id}: {e}")
                 return build_custom_http_response(
                     status_code=200,
-                    content=content,
+                    content=validated_data.model_dump(),
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
