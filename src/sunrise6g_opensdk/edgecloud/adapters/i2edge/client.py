@@ -1054,7 +1054,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             )
             payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
-            response = i2edge_post(url, payload)
+            response = i2edge_post(url, payload, 202)
             if response.status_code == 202:
                 response_json = response.json()
                 content = {
