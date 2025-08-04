@@ -176,26 +176,20 @@ def app_instance_id(edgecloud_client):
         deploy_payload = config["APP_DEPLOY_PAYLOAD"]
         app_id = deploy_payload["appId"]
         app_zones = deploy_payload["appZones"]
+
+        # edgecloud_client.deploy_app maps with CAMARA POST /appinstances
         response = edgecloud_client.deploy_app(app_id, app_zones)
 
         assert isinstance(response, Response)
-
-        # All CAMARA-compliant adapters should return 202 for async deployment
-        assert response.status_code == 202
+        assert (
+            response.status_code == 202
+        ), f"Expected 202, got {response.status_code}: {response.text}"
 
         response_data = response.json()
+        instance_info = camara_schemas.AppInstanceInfo(**response_data)
 
-        # Use CAMARA schema validation for deployment response
-        assert "appInstances" in response_data
-        assert isinstance(response_data["appInstances"], list)
-        assert len(response_data["appInstances"]) > 0
-
-        # Validate each app instance with CAMARA schema
-        for instance_data in response_data["appInstances"]:
-            camara_schemas.AppInstanceInfo(**instance_data)
-
-        # Extract appInstanceId from first instance
-        app_instance_id = response_data["appInstances"][0].get("appInstanceId")
+        # Extract appInstanceId from the validated object
+        app_instance_id = instance_info.appInstanceId.root
 
         assert app_instance_id is not None
         yield app_instance_id
