@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field, HttpUrl, RootModel
 
 # ---------------------------
 # FederationManagement
@@ -121,11 +121,106 @@ class ZoneRegisteredDataList(RootModel[List[ZoneRegisteredData]]):
 # ---------------------------
 
 
+class ArtefactRepoLocation(BaseModel):
+    repoURL: HttpUrl
+    userName: Optional[str] = None
+    password: Optional[str] = None
+    token: Optional[str] = None
+
+
+class Artefact(BaseModel):
+    artefactId: str
+    appProviderId: str = None
+    artefactName: str
+    artefactDescription: Optional[str] = None
+    artefactVersionInfo: str
+    artefactVirtType: Literal["VM_TYPE", "CONTAINER_TYPE"]
+    artefactFileName: Optional[str] = None
+    artefactFileFormat: Optional[Literal["ZIP", "TAR", "TEXT", "TARGZ"]] = None
+    artefactDescriptorType: Literal["HELM", "TERRAFORM", "ANSIBLE", "SHELL", "COMPONENTSPEC"]
+    repoType: Optional[Literal["PRIVATEREPO", "PUBLICREPO", "UPLOAD"]] = None
+    artefactRepoLocation: Optional[ArtefactRepoLocation] = None
+
+
 # ---------------------------
 # ApplicationOnboardingManagement
 # ---------------------------
 
 
+class AppDeploymentZone(BaseModel):
+    countryCode: str
+    zoneInfo: str
+
+
+class AppMetaData(BaseModel):
+    appName: str
+    version: str
+    appDescription: Optional[str] = None
+    mobilitySupport: bool = False
+    accessToken: str
+    category: Optional[
+        Literal[
+            "IOT",
+            "HEALTH_CARE",
+            "GAMING",
+            "VIRTUAL_REALITY",
+            "SOCIALIZING",
+            "SURVEILLANCE",
+            "ENTERTAINMENT",
+            "CONNECTIVITY",
+            "PRODUCTIVITY",
+            "SECURITY",
+            "INDUSTRIAL",
+            "EDUCATION",
+            "OTHERS",
+        ]
+    ] = None
+
+
+class AppQoSProfile(BaseModel):
+    latencyConstraints: Literal["NONE", "LOW", "ULTRALOW"]
+    bandwidthRequired: int = Field(..., ge=1)
+    multiUserClients: Literal["APP_TYPE_SINGLE_USER", "APP_TYPE_MULTI_USER"]
+    noOfUsersPerAppInst: int = 1
+    appProvisioning: bool = True
+
+
+class AppComponentSpec(BaseModel):
+    serviceNameNB: str
+    serviceNameEW: str
+    componentName: str
+    artefactId: str
+
+
+class ApplicationModel(BaseModel):
+    appId: str
+    appProviderId: str
+    appDeploymentZones: List[AppDeploymentZone] = Field(..., min_length=1)
+    appMetaData: AppMetaData
+    appQoSProfile: AppQoSProfile
+    appComponentSpecs: List[AppComponentSpec] = Field(..., min_length=1)
+    onboardStatusInfo: Literal["PENDING", "ONBOARDED", "DEBOARDING", "REMOVED", "FAILED"]
+
+
 # ---------------------------
 # ApplicationDeploymentManagement
 # ---------------------------
+
+
+class AppInstance(BaseModel):
+    zoneId: str
+    appInstIdentifier: str
+
+
+class AppInstanceStatus(BaseModel):
+    appInstanceState: Literal["PENDING", "READY", "FAILED", "TERMINATING", "DEPLOYED"]
+    accesspointInfo: List[dict]
+
+
+class ZoneIdentifier(BaseModel):
+    zoneId: str
+    appInstanceInfo: List[dict]
+
+
+class ZoneIdentifierList(RootModel[List[ZoneIdentifier]]):
+    pass
