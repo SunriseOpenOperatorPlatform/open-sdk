@@ -122,6 +122,7 @@ class AppQoSProfile(BaseModel):
     appProvisioning: bool = Field(default=True)
     bandwidthRequired: int = Field(default=1)
     latencyConstraints: str = Field(default="NONE")
+    mobilitySupport: Optional[bool] = None
     multiUserClients: str = Field(default="APP_TYPE_SINGLE_USER")
     noOfUsersPerAppInst: int = Field(default=1)
 

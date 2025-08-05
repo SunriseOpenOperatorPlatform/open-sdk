@@ -27,6 +27,7 @@ from .common import (
     I2EdgeError,
     i2edge_delete,
     i2edge_get,
+    i2edge_patch,
     i2edge_post,
     i2edge_post_multiform_data,
 )
@@ -1026,7 +1027,30 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :param request_body: Payload with updated onboarding info.
         :return: Response with update confirmation.
         """
-        pass
+        url = f"{self.base_url}/application/onboarding/{app_id}"
+        params = {}
+        response = i2edge_get(url, params, expected_status=200)
+        response_json = response.json()
+        app_component_specs = request_body.get("appComponents")
+        app_qos_profile = request_body.get("appUpdQoSProfile")
+        response_json["profile_data"]["appQoSProfile"] = app_qos_profile
+        response_json["profile_data"]["appComponentSpecs"] = app_component_specs
+        data = response_json.get("profile_data")
+        try:
+            payload = i2edge_schemas.ApplicationOnboardingRequest(profile_data=data)
+            url = "{}/application/onboarding/{}".format(self.base_url, app_id)
+            response = i2edge_patch(url, payload, expected_status=200)
+            return build_custom_http_response(
+                status_code=200,
+                content={"response": "Application update successful"},
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to patch onboarded app: {e}")
+            raise
 
     def delete_onboarded_app_gsma(self, app_id: str) -> Response:
         """
