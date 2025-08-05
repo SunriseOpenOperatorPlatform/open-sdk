@@ -192,63 +192,63 @@ class ServiceFunctionRegistrationRequest(Model):
 
     @property
     def required_resources(self) -> dict:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the required_resources of this ServiceFunctionRegistrationRequest.
 
 
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The required_resources of this ServiceFunctionRegistrationRequest.
+        :rtype: dict
         """
         return self._required_resources
 
     @required_resources.setter
     def required_resources(self, required_resources: dict):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the required_resources of this ServiceFunctionRegistrationRequest.
 
 
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param required_resources: The required_resources of this ServiceFunctionRegistrationRequest.
+        :type required_resources: dict
         """
 
         self._required_resources = required_resources
 
     @property
     def app_provider(self) -> str:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the app_provider of this ServiceFunctionRegistrationRequest.
 
 
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The app_provider of this ServiceFunctionRegistrationRequest.
+        :rtype: str
         """
         return self._app_provider
 
     @app_provider.setter
     def app_provider(self, app_provider: str):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the app_provider of this ServiceFunctionRegistrationRequest.
 
 
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param app_provider: The app_provider of this ServiceFunctionRegistrationRequest.
+        :type app_provider: str
         """
 
         self._app_provider = app_provider
 
     @property
     def version(self) -> str:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the version of this ServiceFunctionRegistrationRequest.
 
 
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The version of this ServiceFunctionRegistrationRequest.
+        :rtype: str
         """
         return self._version
 
     @version.setter
     def version(self, version: str):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the version of this ServiceFunctionRegistrationRequest.
 
 
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param version: The version of this ServiceFunctionRegistrationRequest.
+        :type version: str
         """
 
         self._version = version
