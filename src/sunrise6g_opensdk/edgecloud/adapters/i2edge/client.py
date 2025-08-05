@@ -112,7 +112,6 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
     # ------------------------------------------------------------------------
     # Artefact Management (i2Edge-Specific, Non-CAMARA)
     # ------------------------------------------------------------------------
-    # All artefact methods now return Response objects for API consistency
 
     def create_artefact(
         self,
@@ -383,7 +382,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                         name=app_metadata.get("appName", ""),
                         version=app_metadata.get("version", ""),
                         appProvider=profile_data.get("appProviderId", ""),
-                        # Hardcoding mandatory fields that don't exist in i2Edge
+                        # Hardcoding mandatory fields that doesn't exist in i2Edge
                         packageType="CONTAINER",
                         appRepo={"type": "PUBLICREPO", "imagePath": "not-available"},
                         requiredResources={
@@ -465,18 +464,22 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 appId=camara_schemas.AppId(appId),
                 appInstanceId=camara_schemas.AppInstanceId(app_instance_id),
                 appProvider=camara_schemas.AppProvider(appProviderId),
-                status=camara_schemas.Status.instantiating,  # 202 means deployment is in progress
+                status=camara_schemas.Status.instantiating,
                 edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(zone_id),
             )
 
             # CAMARA spec requires appInstances array wrapper
-            camara_response = {"appInstances": [app_instance_info.model_dump(mode="json")]}
+            camara_response = app_instance_info.model_dump(mode="json")
+
+            # Add mandatory Location header
+            location_url = f"/appinstances/{app_instance_id}"
+            camara_headers = {"Content-Type": "application/json", "Location": location_url}
 
             log.info("App deployment request submitted successfully")
             return build_custom_http_response(
                 status_code=i2edge_response.status_code,
                 content=camara_response,
-                headers={"Content-Type": "application/json"},
+                headers=camara_headers,
                 encoding="utf-8",
                 url=i2edge_response.url,
                 request=i2edge_response.request,
@@ -544,7 +547,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                             ),
                             status=camara_schemas.Status(
                                 camara_status
-                            ),  # Map the i2Edge "DEPLOYED" status to the CAMARA "ready" status for consistency with CAMARA specifications.
+                            ),  # FIX: Map DEPLOYED -> ready
                             edgeCloudZoneId=camara_schemas.EdgeCloudZoneId(
                                 zone_id
                             ),  # FIX: Extract from nodeSelector

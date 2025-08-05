@@ -101,14 +101,27 @@ def test_config_camara_compliance(edgecloud_client):
 
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_get_edge_cloud_zones(edgecloud_client):
+    config = CONFIG[edgecloud_client.client_name]
     try:
         response = edgecloud_client.get_edge_cloud_zones()
         assert isinstance(response, Response)
         assert response.status_code == 200
         zones = response.json()
         assert isinstance(zones, list)
+
+        # CAMARA schema validation for each zone
+        validated_zones = []
         for zone in zones:
-            camara_schemas.EdgeCloudZone(**zone)
+            validated_zone = camara_schemas.EdgeCloudZone(**zone)
+            validated_zones.append(validated_zone)
+
+        # Logical validation: verify our expected zone is in the list
+        expected_zone_id = config["ZONE_ID"]
+        found_expected_zone = any(
+            str(zone.edgeCloudZoneId.root) == expected_zone_id for zone in validated_zones
+        )
+        assert found_expected_zone, f"Expected zone {expected_zone_id} not found in returned zones"
+
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to retrieve zones: {e}")
     except Exception as e:
@@ -144,8 +157,10 @@ def test_onboard_app(edgecloud_client):
 
         payload = response.json()
         assert isinstance(payload, dict)
-        assert "appId" in payload
-        camara_schemas.AppId(root=payload["appId"])
+
+        # Use CAMARA schema validation for submitted app response
+        submitted_app = camara_schemas.SubmittedApp(**payload)
+        assert submitted_app.appId.root == config["APP_ID"]
 
     except EdgeCloudPlatformError as e:
         pytest.fail(f"App onboarding failed: {e}")
@@ -161,22 +176,20 @@ def app_instance_id(edgecloud_client):
         deploy_payload = config["APP_DEPLOY_PAYLOAD"]
         app_id = deploy_payload["appId"]
         app_zones = deploy_payload["appZones"]
+
+        # edgecloud_client.deploy_app maps with CAMARA POST /appinstances
         response = edgecloud_client.deploy_app(app_id, app_zones)
 
         assert isinstance(response, Response)
-
-        # All CAMARA-compliant adapters should return 202 for async deployment
-        assert response.status_code == 202
+        assert (
+            response.status_code == 202
+        ), f"Expected 202, got {response.status_code}: {response.text}"
 
         response_data = response.json()
+        instance_info = camara_schemas.AppInstanceInfo(**response_data)
 
-        # CAMARA spec: response contains appInstances array
-        assert "appInstances" in response_data
-        assert isinstance(response_data["appInstances"], list)
-        assert len(response_data["appInstances"]) > 0
-
-        # Extract appInstanceId from first instance
-        app_instance_id = response_data["appInstances"][0].get("appInstanceId")
+        # Extract appInstanceId from the validated object
+        app_instance_id = instance_info.appInstanceId.root
 
         assert app_instance_id is not None
         yield app_instance_id
@@ -208,11 +221,9 @@ def test_get_onboarded_app(edgecloud_client):
         assert isinstance(app_data, dict)
         assert "appManifest" in app_data
 
-        app_manifest = app_data["appManifest"]
-        assert app_manifest["appId"] == app_id
-        assert "name" in app_manifest
-        assert "version" in app_manifest
-        assert "appProvider" in app_manifest
+        # Use CAMARA schema validation instead of manual checks
+        app_manifest = camara_schemas.AppManifest(**app_data["appManifest"])
+        assert app_manifest.appId.root == app_id
 
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to get onboarded app: {e}")
@@ -221,6 +232,7 @@ def test_get_onboarded_app(edgecloud_client):
 @pytest.mark.parametrize("edgecloud_client", test_cases, ids=id_func, indirect=True)
 def test_get_all_onboarded_apps(edgecloud_client):
     """Test retrieving all onboarded applications"""
+    config = CONFIG[edgecloud_client.client_name]
     try:
         response = edgecloud_client.get_all_onboarded_apps()
         assert isinstance(response, Response)
@@ -229,16 +241,16 @@ def test_get_all_onboarded_apps(edgecloud_client):
         apps_data = response.json()
         assert isinstance(apps_data, list)
 
-        # Verify each app has required CAMARA fields
-        for app_manifest in apps_data:
-            assert "appId" in app_manifest
-            assert "name" in app_manifest
-            assert "version" in app_manifest
-            assert "appProvider" in app_manifest
-            assert "packageType" in app_manifest
-            assert "appRepo" in app_manifest
-            assert "requiredResources" in app_manifest
-            assert "componentSpec" in app_manifest
+        # CAMARA schema validation for each app manifest
+        validated_apps = []
+        for app_manifest_data in apps_data:
+            validated_app = camara_schemas.AppManifest(**app_manifest_data)
+            validated_apps.append(validated_app)
+
+        # Logical validation: verify our onboarded app is in the list
+        expected_app_id = config["APP_ID"]
+        found_expected_app = any(str(app.appId.root) == expected_app_id for app in validated_apps)
+        assert found_expected_app, f"Expected app {expected_app_id} not found in onboarded apps"
 
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to get all onboarded apps: {e}")
@@ -257,14 +269,13 @@ def test_get_all_deployed_apps(edgecloud_client):
         assert "appInstances" in instances_data
         assert isinstance(instances_data["appInstances"], list)
 
-        # Verify each instance has required CAMARA fields
-        for instance in instances_data["appInstances"]:
-            assert "name" in instance
-            assert "appId" in instance
-            assert "appInstanceId" in instance
-            assert "appProvider" in instance
-            assert "status" in instance
-            assert "edgeCloudZoneId" in instance
+        # CAMARA schema validation for each app instance
+        validated_instances = []
+        for instance_data in instances_data["appInstances"]:
+            validated_instance = camara_schemas.AppInstanceInfo(**instance_data)
+            validated_instances.append(validated_instance)
+
+        # TODO: validate that the newly created app instance is in the list
 
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to get all deployed apps: {e}")
@@ -282,13 +293,11 @@ def test_get_deployed_app(edgecloud_client, app_instance_id):
         assert isinstance(instance_data, dict)
         assert "appInstance" in instance_data
 
-        instance = instance_data["appInstance"]
-        assert instance["appInstanceId"] == app_instance_id
-        assert "name" in instance
-        assert "appId" in instance
-        assert "appProvider" in instance
-        assert "status" in instance
-        assert "edgeCloudZoneId" in instance
+        # Use CAMARA schema validation for the app instance
+        app_instance = camara_schemas.AppInstanceInfo(**instance_data["appInstance"])
+        assert app_instance.appInstanceId.root == app_instance_id
+
+        # TODO: validate that we can get the newly created app
 
     except EdgeCloudPlatformError as e:
         pytest.fail(f"Failed to get deployed app: {e}")
