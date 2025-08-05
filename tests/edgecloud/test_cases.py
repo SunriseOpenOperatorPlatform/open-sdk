@@ -17,30 +17,17 @@ test_cases = [
     #     }
     # },
     # {
-    # {
-    #     "edgecloud": {
-    #         "client_name": "kubernetes",
-    #         "base_url": "http://X.Y.Z.T:PORT/",
-    #         # Additional parameters for K8s client:
-    #         "PLATFORM_PROVIDER": "<>",
-    #         "KUBERNETES_MASTER_TOKEN": "<>",
-    #         # "KUBERNETES_MASTER_PORT": "80",
-    #         "KUBERNETES_USERNAME": "<>",
-    #         "EMP_STORAGE_URI": "mongodb://A.B.C.D:PORT",
-    #         "K8S_NAMESPACE": "sunrise6g",
-    #     }
-    # },
     {
         "edgecloud": {
             "client_name": "kubernetes",
-            "base_url": "https://146.124.106.200",
+            "base_url": "http://X.Y.Z.T:PORT/",
             # Additional parameters for K8s client:
-            "PLATFORM_PROVIDER": "ICOM",
-            "KUBERNETES_MASTER_TOKEN": "T3FRNnNVK25FY3I5ZHlNYmxrSEFpd2VPcW5WTlliTnRVNVo3bitNY1B3az0K",
-            "KUBERNETES_MASTER_PORT": "16443",
+            "PLATFORM_PROVIDER": "<>",
+            "KUBERNETES_MASTER_TOKEN": "<>",
+            # "KUBERNETES_MASTER_PORT": "80",
             "KUBERNETES_USERNAME": "<>",
-            "EMP_STORAGE_URI": "mongodb://146.124.106.200:32411",
+            "EMP_STORAGE_URI": "mongodb://A.B.C.D:PORT",
             "K8S_NAMESPACE": "sunrise6g",
         }
-    }
+    },
 ]
