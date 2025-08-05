@@ -15,6 +15,7 @@ from pydantic import ValidationError
 from requests import Response
 
 from sunrise6g_opensdk import logger
+from sunrise6g_opensdk.edgecloud.core import gsma_schemas
 from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from sunrise6g_opensdk.edgecloud.core.edgecloud_interface import (
     EdgeCloudManagementInterface,
@@ -26,9 +27,11 @@ from .common import (
     I2EdgeError,
     i2edge_delete,
     i2edge_get,
+    i2edge_patch,
     i2edge_post,
     i2edge_post_multiform_data,
 )
+from .gsma_utils import map_zone
 
 log = logger.get_logger(__name__)
 
@@ -733,31 +736,27 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
         :return: Response with zone details in GSMA format.
         """
-        url = "{}/zones/list".format(self.base_url)
+        url = f"{self.base_url}/zones/list"
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response_json = response.json()
-                response_list = []
-                for item in response_json:
-                    content = {
-                        "zoneId": item.get("zoneId"),
-                        "geolocation": item.get("geolocation"),
-                        "geographyDetails": item.get("geographyDetails"),
-                    }
-                    response_list.append(content)
-                return build_custom_http_response(
-                    status_code=200,
-                    content=response_list,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
+            response = i2edge_get(url, params=params, expected_status=200)
+            response_json = response.json()
+            try:
+                validated_data = gsma_schemas.ZonesList.model_validate(response_json)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+
+            return build_custom_http_response(
+                status_code=200,
+                content=[zone.model_dump_json() for zone in validated_data.root],
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to obtain Zones list from i2edge: {e}")
+            raise
 
     def get_edge_cloud_zones_gsma(self) -> Response:
         """
@@ -765,34 +764,27 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
         :return: Response with zones and detailed resource information.
         """
-        url = "{}/zones".format(self.base_url)
+        url = f"{self.base_url}/zones"
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response_json = response.json()
-                response_list = []
-                for item in response_json:
-                    content = {
-                        "zoneId": item.get("zoneId"),
-                        "reservedComputeResources": item.get("reservedComputeResources"),
-                        "computeResourceQuotaLimits": item.get("computeResourceQuotaLimits"),
-                        "flavoursSupported": item.get("flavoursSupported"),
-                        "networkResources": item.get("networkResources"),
-                        "zoneServiceLevelObjsInfo": item.get("zoneServiceLevelObjsInfo"),
-                    }
-                    response_list.append(content)
-                return build_custom_http_response(
-                    status_code=200,
-                    content=response_list,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
+            response = i2edge_get(url, params=params, expected_status=200)
+            response_json = response.json()
+            mapped = [map_zone(zone) for zone in response_json]
+            try:
+                validated_data = gsma_schemas.ZoneRegisteredDataList.model_validate(mapped)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema {e}")
+            return build_custom_http_response(
+                status_code=200,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to obtain Zones details from i2edge: {e}")
+            raise
 
     def get_edge_cloud_zone_details_gsma(self, zone_id: str) -> Response:
         """
@@ -802,31 +794,27 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :param zone_id: Unique identifier of the Edge Cloud Zone.
         :return: Response with Edge Cloud Zone details.
         """
-        url = "{}/zone/{}".format(self.base_url, zone_id)
+        url = f"{self.base_url}/zone/{zone_id}"
         params = {}
         try:
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response_json = response.json()
-                content = {
-                    "zoneId": response_json.get("zoneId"),
-                    "reservedComputeResources": response_json.get("reservedComputeResources"),
-                    "computeResourceQuotaLimits": response_json.get("computeResourceQuotaLimits"),
-                    "flavoursSupported": response_json.get("flavoursSupported"),
-                    "networkResources": response_json.get("networkResources"),
-                    "zoneServiceLevelObjsInfo": response_json.get("zoneServiceLevelObjsInfo"),
-                }
-                return build_custom_http_response(
-                    status_code=200,
-                    content=content,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
+            response = i2edge_get(url, params=params, expected_status=200)
+            response_json = response.json()
+            mapped = map_zone(response_json)
+            try:
+                validated_data = gsma_schemas.ZoneRegisteredData.model_validate(mapped)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+            return build_custom_http_response(
+                status_code=200,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
         except I2EdgeError as e:
-            raise e
+            log.error(f"Failed to obtain Zones details from i2edge: {e}")
+            raise
 
     # ------------------------------------------------------------------------
     # Artefact Management (GSMA)
@@ -849,8 +837,8 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             transformed = {
                 "artefact_id": artefact_id,
                 "artefact_name": artefact_name,
-                "repo_name": repo_data.get("repoName", "unknown-repo"),
-                "repo_type": request_body.get("repoType", "PUBLICREPO"),
+                "repo_name": repo_data.get("repoName"),
+                "repo_type": request_body.get("repoType"),
                 "repo_url": repo_data["repoURL"],
                 "user_name": repo_data.get("userName"),
                 "password": repo_data.get("password"),
@@ -868,8 +856,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     request=response.request,
                 )
             return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing required field in GSMA artefact payload: {e}")
+        except I2EdgeError as e:
+            log.error(f"Failed to create artefact: {e}")
+            raise
 
     def get_artefact_gsma(self, artefact_id: str) -> Response:
         """
@@ -882,36 +871,40 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             response = self.get_artefact(artefact_id)
             if response.status_code == 200:
                 response_json = response.json()
-                print(response_json)
-                content = {
-                    "artefactId": response_json.get("artefact_id"),
-                    "appProviderId": "Ihs0gCqO65SHTz",
-                    "artefactName": response_json.get("name"),
-                    "artefactDescription": "string",
-                    "artefactVersionInfo": response_json.get("version"),
-                    "artefactVirtType": "VM_TYPE",
-                    "artefactFileName": "stringst",
-                    "artefactFileFormat": "ZIP",
-                    "artefactDescriptorType": "HELM",
-                    "repoType": response_json.get("repo_type"),
-                    "artefactRepoLocation": {
-                        "repoURL": response_json.get("repo_url"),
-                        "userName": response_json.get("repo_user_name"),
-                        "password": response_json.get("repo_password"),
-                        "token": response_json.get("repo_token"),
-                    },
-                }
+                content = gsma_schemas.Artefact(
+                    artefactId=response_json.get("artefact_id"),
+                    appProviderId=response_json.get("id"),
+                    artefactName=response_json.get("name"),
+                    artefactDescription="Description",
+                    artefactVersionInfo=response_json.get("version"),
+                    artefactVirtType="VM_TYPE",
+                    artefactFileName="FileName",
+                    artefactFileFormat="TAR",
+                    artefactDescriptorType="HELM",
+                    repoType=response_json.get("repo_type"),
+                    artefactRepoLocation=gsma_schemas.ArtefactRepoLocation(
+                        repoURL=response_json.get("repo_url"),
+                        userName=response_json.get("repo_user_name"),
+                        password=response_json.get("repo_password"),
+                        token=response_json.get("repo_token"),
+                    ),
+                )
+                try:
+                    validated_data = gsma_schemas.Artefact.model_validate(content)
+                except ValidationError as e:
+                    raise ValueError(f"Invalid schema: {e}")
                 return build_custom_http_response(
                     status_code=200,
-                    content=content,
+                    content=validated_data.model_dump_json(),
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
                     request=response.request,
                 )
             return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing artefactId in GSMA payload: {e}")
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve artefact: {e}")
+            raise
 
     def delete_artefact_gsma(self, artefact_id: str) -> Response:
         """
@@ -955,19 +948,18 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             data = body
             payload = i2edge_schemas.ApplicationOnboardingRequest(profile_data=data)
             url = "{}/application/onboarding".format(self.base_url)
-            response = i2edge_post(url, payload)
-            if response.status_code == 201:
-                return build_custom_http_response(
-                    status_code=200,
-                    content={"response": "Application onboarded successfully"},
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing required field in GSMA onboarding payload: {e}")
+            response = i2edge_post(url, payload, expected_status=201)
+            return build_custom_http_response(
+                status_code=200,
+                content={"response": "Application onboarded successfully"},
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to onboard app: {e}")
+            raise
 
     def get_onboarded_app_gsma(self, app_id: str) -> Response:
         """
@@ -976,30 +968,58 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :param app_id: Identifier of the application onboarded.
         :return: Response with application details.
         """
+        url = f"{self.base_url}/application/onboarding/{app_id}"
+        params = {}
         try:
-            response = self.get_onboarded_app(app_id)
-            if response.status_code == 200:
-                response_json = response.json()
-                profile_data = response_json.get("profile_data")
-                content = {
-                    "appId": profile_data.get("app_id"),
-                    "appProviderId": "string",
-                    "appDeploymentZones": profile_data.get("appDeploymentZones"),
-                    "appMetaData": profile_data.get("appMetadata"),
-                    "appQoSProfile": profile_data.get("appQoSProfile"),
-                    "appComponentSpecs": profile_data.get("appComponentSpecs"),
-                }
-                return build_custom_http_response(
-                    status_code=200,
-                    content=content,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
+            response = i2edge_get(url, params, expected_status=200)
+            response_json = response.json()
+            profile_data = response_json.get("profile_data")
+            app_deployment_zones = profile_data.get("appDeploymentZones")
+            app_metadata = profile_data.get("appMetaData")
+            app_qos_profile = profile_data.get("appQoSProfile")
+            app_component_specs = profile_data.get("appComponentSpecs")
+            content = gsma_schemas.ApplicationModel(
+                appId=profile_data.get("app_id"),
+                appProviderId="from_FM",
+                appDeploymentZones=[
+                    gsma_schemas.AppDeploymentZone(countryCode="ES", zoneInfo=zone_id)
+                    for zone_id in app_deployment_zones
+                ],
+                appMetaData=gsma_schemas.AppMetaData(
+                    appName=app_metadata.get("appName"),
+                    version=app_metadata.get("version"),
+                    appDescription=app_metadata.get("appDescription"),
+                    mobilitySupport=app_metadata.get("mobilitySupport"),
+                    accessToken=app_metadata.get("accessToken"),
+                    category=app_metadata.get("category"),
+                ),
+                appQoSProfile=gsma_schemas.AppQoSProfile(
+                    latencyConstraints=app_qos_profile.get("latencyConstraints"),
+                    bandwidthRequired=app_qos_profile.get("bandwidthRequired"),
+                    multiUserClients=app_qos_profile.get("multiUserClients"),
+                    noOfUsersPerAppInst=app_qos_profile.get("noOfUsersPerAppInst"),
+                    appProvisioning=app_qos_profile.get("appProvisioning"),
+                ),
+                appComponentSpecs=[
+                    gsma_schemas.AppComponentSpec(**component) for component in app_component_specs
+                ],
+                onboardStatusInfo="ONBOARDED",
+            )
+            try:
+                validated_data = gsma_schemas.ApplicationModel.model_validate(content)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+            return build_custom_http_response(
+                status_code=200,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to get onboarded app: {e}")
+            raise
 
     def patch_onboarded_app_gsma(self, app_id: str, request_body: dict) -> Response:
         """
@@ -1010,7 +1030,30 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         :param request_body: Payload with updated onboarding info.
         :return: Response with update confirmation.
         """
-        pass
+        url = f"{self.base_url}/application/onboarding/{app_id}"
+        params = {}
+        response = i2edge_get(url, params, expected_status=200)
+        response_json = response.json()
+        app_component_specs = request_body.get("appComponents")
+        app_qos_profile = request_body.get("appUpdQoSProfile")
+        response_json["profile_data"]["appQoSProfile"] = app_qos_profile
+        response_json["profile_data"]["appComponentSpecs"] = app_component_specs
+        data = response_json.get("profile_data")
+        try:
+            payload = i2edge_schemas.ApplicationOnboardingRequest(profile_data=data)
+            url = "{}/application/onboarding/{}".format(self.base_url, app_id)
+            response = i2edge_patch(url, payload, expected_status=200)
+            return build_custom_http_response(
+                status_code=200,
+                content={"response": "Application update successful"},
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to patch onboarded app: {e}")
+            raise
 
     def delete_onboarded_app_gsma(self, app_id: str) -> Response:
         """
@@ -1031,8 +1074,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     request=response.request,
                 )
             return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing appId in GSMA payload: {e}")
+        except I2EdgeError as e:
+            log.error(f"Failed to delete onboarded app: {e}")
+            raise
 
     # ------------------------------------------------------------------------
     # Application Deployment Management (GSMA)
@@ -1057,24 +1101,28 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             )
             payload = i2edge_schemas.AppDeploy(app_deploy_data=app_deploy_data)
             url = "{}/application_instance".format(self.base_url)
-            response = i2edge_post(url, payload, 202)
-            if response.status_code == 202:
-                response_json = response.json()
-                content = {
-                    "zoneId": response_json.get("zoneID"),
-                    "appInstIdentifier": response_json.get("app_instance_id"),
-                }
-                return build_custom_http_response(
-                    status_code=202,
-                    content=content,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing required field in GSMA deployment payload: {e}")
+            response = i2edge_post(url, payload, expected_status=202)
+
+            response_json = response.json()
+            content = gsma_schemas.AppInstance(
+                zoneId=response_json.get("zoneID"),
+                appInstIdentifier=response_json.get("app_instance_id"),
+            )
+            try:
+                validated_data = gsma_schemas.AppInstance.model_validate(content)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+            return build_custom_http_response(
+                status_code=202,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to deploy app: {e}")
+            raise
 
     def get_deployed_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
@@ -1088,26 +1136,31 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         try:
             url = "{}/application_instance/{}/{}".format(self.base_url, zone_id, app_instance_id)
             params = {}
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response_json = response.json()
-                content = {
-                    "appInstanceState": response_json.get("appInstanceState"),
-                    "accesspointInfo": response_json.get("accesspointInfo"),
-                }
-                return build_custom_http_response(
-                    status_code=200,
-                    content=content,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing appId or zoneId in GSMA payload: {e}")
+            response = i2edge_get(url, params=params, expected_status=200)
 
-    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Response:
+            response_json = response.json()
+            content = gsma_schemas.AppInstanceStatus(
+                appInstanceState=response_json.get("appInstanceState"),
+                accesspointInfo=response_json.get("accesspointInfo"),
+            )
+            try:
+                validated_data = gsma_schemas.AppInstanceStatus.model_validate(content)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+            return build_custom_http_response(
+                status_code=200,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve deployed app: {e}")
+            raise
+
+    def get_all_deployed_apps_gsma(self) -> Response:
         """
         Retrieves all instances for a given application of partner OP using GSMA federation.
 
@@ -1118,36 +1171,38 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         try:
             url = "{}/application_instances".format(self.base_url)
             params = {}
-            response = i2edge_get(url, params=params)
-            if response.status_code == 200:
-                response_json = response.json()
-                response_list = []
-                for item in response_json:
-                    content = [
+            response = i2edge_get(url, params=params, expected_status=200)
+            response_json = response.json()
+            response_list = []
+            for item in response_json:
+                content = {
+                    "zoneId": item.get("app_spec")
+                    .get("nodeSelector")
+                    .get("feature.node.kubernetes.io/zoneID"),
+                    "appInstanceInfo": [
                         {
-                            "zoneId": item.get("app_spec")
-                            .get("nodeSelector")
-                            .get("feature.node.kubernetes.io/zoneID"),
-                            "appInstanceInfo": [
-                                {
-                                    "appInstIdentifier": item.get("app_instance_id"),
-                                    "appInstanceState": item.get("deploy_status"),
-                                }
-                            ],
+                            "appInstIdentifier": item.get("app_instance_id"),
+                            "appInstanceState": item.get("deploy_status"),
                         }
-                    ]
-                    response_list.append(content)
-                return build_custom_http_response(
-                    status_code=200,
-                    content=response_list,
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Error retrieving apps: {e}")
+                    ],
+                }
+
+                response_list.append(content)
+            try:
+                validated_data = gsma_schemas.ZoneIdentifierList.model_validate(response_list)
+            except ValidationError as e:
+                raise ValueError(f"Invalid schema: {e}")
+            return build_custom_http_response(
+                status_code=200,
+                content=validated_data.model_dump_json(),
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to retrieve apps: {e}")
+            raise
 
     def undeploy_app_gsma(self, app_id: str, app_instance_id: str, zone_id: str) -> Response:
         """
@@ -1160,16 +1215,15 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         """
         try:
             url = "{}/application_instance".format(self.base_url)
-            response = i2edge_delete(url, app_instance_id)
-            if response.status_code == 200:
-                return build_custom_http_response(
-                    status_code=200,
-                    content={"response": "Application instance termination request accepted"},
-                    headers={"Content-Type": self.content_type_gsma},
-                    encoding=self.encoding_gsma,
-                    url=response.url,
-                    request=response.request,
-                )
-            return response
-        except KeyError as e:
-            raise I2EdgeError(f"Missing appInstanceId in GSMA payload: {e}")
+            response = i2edge_delete(url, app_instance_id, expected_status=200)
+            return build_custom_http_response(
+                status_code=200,
+                content={"response": "Application instance termination request accepted"},
+                headers={"Content-Type": self.content_type_gsma},
+                encoding=self.encoding_gsma,
+                url=response.url,
+                request=response.request,
+            )
+        except I2EdgeError as e:
+            log.error(f"Failed to delete app: {e}")
+            raise
