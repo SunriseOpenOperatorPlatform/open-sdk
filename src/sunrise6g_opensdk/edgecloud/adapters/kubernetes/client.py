@@ -201,6 +201,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             #     access_point = {"port": port}
             #     interfaces.append({"interfaceId": "", "accessPoints": access_point})
             # response["componentEndpointInfo"] = interfaces
+            # FIXME: avoid harcoded values that assign fake ids
             response["kubernetesClusterRef"] = "642f6105-7015-4af1-a4d1-e1ecb8437abc"
             response["edgeCloudZoneId"] = app_zones[0].get("EdgeCloudZone").get("edgeCloudZoneId")
 
@@ -244,6 +245,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     access_point = {"port": port}
                     interfaces.append({"interfaceId": "", "accessPoints": access_point})
                 # item["componentEndpointInfo"] = interfaces
+                # FIXME: avoid harcoded values that assign fake ids
                 item["kubernetesClusterRef"] = "642f6105-7015-4af1-a4d1-e1ecb8437abc"
                 item["edgeCloudZoneId"] = deployment.get(
                     "edgeCloudZoneId", "6824d63a-4d5b-4624-a487-dbdf118b0fdb"
@@ -299,7 +301,9 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 access_point = {"port": port}
                 interfaces.append({"interfaceId": "", "accessPoints": access_point})
             # response["componentEndpointInfo"] = interfaces
+            # FIXME: avoid harcoded values that assign fake ids
             response["kubernetesClusterRef"] = "642f6105-7015-4af1-a4d1-e1ecb8437abc"
+            # FIXME: avoid harcoded values that assign fake ids
             response["edgeCloudZoneId"] = deployed_app.get(
                 "edgeCloudZoneId", "6824d63a-4d5b-4624-a487-dbdf118b0fdb"
             )
@@ -429,6 +433,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 "protocol": "TCP",
                 "port": port,
                 "visibilityType": "VISIBILITY_EXTERNAL",
+                # FIXME: avoid harcoded values that assign fake ids
                 "interfaceId": "gUn3d3EKG05T0zWZynI5c1d9l9QE",
             }
             networkInterfaces.append(port_spec)
