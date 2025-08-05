@@ -31,6 +31,9 @@ from sunrise6g_opensdk.edgecloud.adapters.errors import EdgeCloudPlatformError
 from sunrise6g_opensdk.edgecloud.adapters.i2edge.client import (
     EdgeApplicationManager as I2EdgeClient,
 )
+from sunrise6g_opensdk.edgecloud.adapters.kubernetes.client import (
+    EdgeApplicationManager as KubernetesClient,
+)
 from sunrise6g_opensdk.edgecloud.core import schemas as camara_schemas
 from tests.edgecloud.test_cases import test_cases
 from tests.edgecloud.test_config import CONFIG
@@ -242,6 +245,11 @@ def test_get_all_onboarded_apps(edgecloud_client):
         assert isinstance(apps_data, list)
 
         # CAMARA schema validation for each app manifest
+
+        # K8s adapter uses a db with other items, irrelevant to SUNRISE6G, so this is filtering out the irrelevant ones
+        if isinstance(edgecloud_client, KubernetesClient):
+            apps_data = filter(lambda d: d["appId"] == config["APP_ID"], apps_data)
+
         validated_apps = []
         for app_manifest_data in apps_data:
             validated_app = camara_schemas.AppManifest(**app_manifest_data)

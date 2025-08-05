@@ -138,6 +138,9 @@ class ConnectorDB:
         insert_doc["name"] = document["service_function_name"]
         insert_doc["type"] = document["service_function_type"]
         insert_doc["image"] = document["service_function_image"]
+        insert_doc["app_provider"] = document["app_provider"]
+        insert_doc["required_resources"] = document["required_resources"]
+        insert_doc["version"] = document.get("version")
         if document.get("application_ports") is not None:
             insert_doc["application_ports"] = document.get("application_ports")
         if document.get("autoscaling_policies") is not None:
