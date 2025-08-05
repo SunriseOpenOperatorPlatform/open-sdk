@@ -130,7 +130,7 @@ class ArtefactRepoLocation(BaseModel):
 
 class Artefact(BaseModel):
     artefactId: str
-    appProviderId: str = None
+    appProviderId: Optional[str] = None
     artefactName: str
     artefactDescription: Optional[str] = None
     artefactVersionInfo: str
