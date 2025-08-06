@@ -23,7 +23,7 @@ class ServiceFunctionRegistrationRequest(Model):
         application_ports: List[int] = None,
         required_resources: dict = None,
         app_provider: str = None,
-        version: str = None
+        version: str = None,
     ):  # noqa: E501
         """ServiceFunctionRegistrationRequest - a model defined in Swagger
 
@@ -50,9 +50,9 @@ class ServiceFunctionRegistrationRequest(Model):
             "service_function_image": str,
             "service_function_type": str,
             "application_ports": List[int],
-            'required_resources': dict,
-            'app_provider': str,
-            'version': str
+            "required_resources": dict,
+            "app_provider": str,
+            "version": str,
         }
 
         self.attribute_map = {
@@ -63,7 +63,7 @@ class ServiceFunctionRegistrationRequest(Model):
             "application_ports": "application_ports",
             "required_resources": "required_resources",
             "app_provider": "app_provider",
-            'version': 'version'
+            "version": "version",
         }
         self._service_function_id = service_function_id
         self._service_function_name = service_function_name
@@ -88,8 +88,6 @@ class ServiceFunctionRegistrationRequest(Model):
     @property
     def service_function_id(self) -> str:
         """Gets the service_function_name of this ServiceFunctionRegistrationRequest.
-
-
         :return: The service_function_name of this ServiceFunctionRegistrationRequest.
         :rtype: str
         """
@@ -98,8 +96,6 @@ class ServiceFunctionRegistrationRequest(Model):
     @service_function_id.setter
     def service_function_id(self, service_function_id: str):
         """Sets the service_function_name of this ServiceFunctionRegistrationRequest.
-
-
         :param service_function_name: The service_function_name of this ServiceFunctionRegistrationRequest.
         :type service_function_name: str
         """
@@ -108,8 +104,7 @@ class ServiceFunctionRegistrationRequest(Model):
 
     @property
     def service_function_name(self) -> str:
-        """Gets the service_function_name of this ServiceFunctionRegistrationRequest.
-
+        """Gets the service_function_name of this ServiceFunctionRegistrationRequest
 
         :return: The service_function_name of this ServiceFunctionRegistrationRequest.
         :rtype: str
@@ -118,20 +113,16 @@ class ServiceFunctionRegistrationRequest(Model):
 
     @service_function_name.setter
     def service_function_name(self, service_function_name: str):
-        """Sets the service_function_name of this ServiceFunctionRegistrationRequest.
-
+        """Sets the service_function_name of this ServiceFunctionRegistrationRequest
 
         :param service_function_name: The service_function_name of this ServiceFunctionRegistrationRequest.
         :type service_function_name: str
         """
-
         self._service_function_name = service_function_name
 
     @property
     def service_function_image(self) -> str:
         """Gets the service_function_image of this ServiceFunctionRegistrationRequest.
-
-
         :return: The service_function_image of this ServiceFunctionRegistrationRequest.
         :rtype: str
         """
@@ -140,19 +131,14 @@ class ServiceFunctionRegistrationRequest(Model):
     @service_function_image.setter
     def service_function_image(self, service_function_image: str):
         """Sets the service_function_image of this ServiceFunctionRegistrationRequest.
-
-
         :param service_function_image: The service_function_image of this ServiceFunctionRegistrationRequest.
         :type service_function_image: str
         """
-
         self._service_function_image = service_function_image
 
     @property
     def service_function_type(self) -> str:
         """Gets the service_function_type of this ServiceFunctionRegistrationRequest.
-
-
         :return: The service_function_type of this ServiceFunctionRegistrationRequest.
         :rtype: str
         """
@@ -161,18 +147,14 @@ class ServiceFunctionRegistrationRequest(Model):
     @service_function_type.setter
     def service_function_type(self, service_function_type: str):
         """Sets the service_function_type of this ServiceFunctionRegistrationRequest.
-
-
         :param service_function_type: The service_function_type of this ServiceFunctionRegistrationRequest.
         :type service_function_type: str
         """
-
         self._service_function_type = service_function_type
 
     @property
     def application_ports(self) -> List[int]:
         """Gets the application_ports of this ServiceFunctionRegistrationRequest.
-
 
         :return: The application_ports of this ServiceFunctionRegistrationRequest.
         :rtype: List[int]
@@ -183,72 +165,65 @@ class ServiceFunctionRegistrationRequest(Model):
     def application_ports(self, application_ports: List[int]):
         """Sets the application_ports of this ServiceFunctionRegistrationRequest.
 
-
         :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
         :type application_ports: List[int]
         """
-
         self._application_ports = application_ports
 
     @property
     def required_resources(self) -> dict:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the required_resources of this ServiceFunctionRegistrationRequest.
 
-
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The required_resources of this ServiceFunctionRegistrationRequest.
+        :rtype: dict
         """
         return self._required_resources
 
     @required_resources.setter
     def required_resources(self, required_resources: dict):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the required_resources of this ServiceFunctionRegistrationRequest.
 
-
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param required_resources: The application_ports of this ServiceFunctionRegistrationRequest.
+        :type required_resources: dict
         """
 
         self._required_resources = required_resources
 
     @property
     def app_provider(self) -> str:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the app_provider of this ServiceFunctionRegistrationRequest.
 
-
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The app_provider of this ServiceFunctionRegistrationRequest.
+        :rtype: str
         """
         return self._app_provider
 
     @app_provider.setter
     def app_provider(self, app_provider: str):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the app_provider of this ServiceFunctionRegistrationRequest.
 
 
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param app_provider: The application_ports of this ServiceFunctionRegistrationRequest.
+        :type app_provider: str
         """
 
         self._app_provider = app_provider
 
     @property
     def version(self) -> str:
-        """Gets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Gets the version of this ServiceFunctionRegistrationRequest.
 
-
-        :return: The application_ports of this ServiceFunctionRegistrationRequest.
-        :rtype: List[int]
+        :return: The version of this ServiceFunctionRegistrationRequest.
+        :rtype: str
         """
         return self._version
 
     @version.setter
     def version(self, version: str):
-        """Sets the application_ports of this ServiceFunctionRegistrationRequest.
+        """Sets the version of this ServiceFunctionRegistrationRequest.
 
-
-        :param application_ports: The application_ports of this ServiceFunctionRegistrationRequest.
-        :type application_ports: List[int]
+        :param version: The application_ports of this ServiceFunctionRegistrationRequest.
+        :type version: str
         """
 
-        self._version = version    
+        self._version = version

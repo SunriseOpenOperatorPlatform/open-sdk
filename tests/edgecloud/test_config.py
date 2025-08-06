@@ -67,12 +67,10 @@ CONFIG = {
         },
     },
     "aeros": {
-        "ZONE_ID": "urn:ngsi-ld:Domain:NCSRD",
-        "ARTEFACT_ID": "aeros-app-2",
-        "ARTEFACT_NAME": "aeroschart",
-        "REPO_NAME": "github-aeros",
-        "REPO_TYPE": "PUBLICREPO",
-        "REPO_URL": "https://aeros.github.io/helm/",
+        # Basic identifiers
+        "ZONE_ID": "<UUID>",
+        "APP_ID": "<UUID>",
+        # CAMARA onboard_app payload
         "APP_ONBOARD_MANIFEST": {
             "appId": "aeros-app-2",
             "name": "aeros-SDK-app",
@@ -113,7 +111,6 @@ CONFIG = {
                 }
             ],
         },
-        "APP_ID": "aeros-app-2",
         # CAMARA deploy_app payload
         "APP_DEPLOY_PAYLOAD": {
             "appId": "aeros-app-2",
@@ -131,8 +128,8 @@ CONFIG = {
         },
     },
     "kubernetes": {
-        "K8S_ONBOARDED_APP_NAME": "nginx",
-        "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        # Basic identifiers
+        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
         "APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
         "APP_DEPLOY_PAYLOAD": {
@@ -156,7 +153,6 @@ CONFIG = {
         #     "edgeCloudZoneId": "zorro-solutions",
         #     "kubernetesClusterRef": "",
         # },
-        
         # Legacy K8S_DEPLOY_PAYLOAD for backward compatibility (if needed)
         "K8S_DEPLOY_PAYLOAD": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -207,5 +203,6 @@ CONFIG = {
                 }
             ],
         },
+        # CAMARA deploy_app payload
     },
 }

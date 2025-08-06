@@ -210,4 +210,3 @@ def deploy_service_function(
             document=deployed_service_function_db
         )
     return response
-

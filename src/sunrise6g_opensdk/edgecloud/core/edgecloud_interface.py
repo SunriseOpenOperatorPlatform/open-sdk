@@ -278,7 +278,7 @@ class EdgeCloudManagementInterface(ABC):
         pass
 
     @abstractmethod
-    def get_all_deployed_apps_gsma(self, app_id: str, app_provider: str) -> Response:
+    def get_all_deployed_apps_gsma(self) -> Response:
         """
         Retrieves all instances for a given application of partner OP
 
