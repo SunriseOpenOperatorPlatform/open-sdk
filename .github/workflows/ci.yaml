@@ -68,6 +68,7 @@ jobs:
   publish:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    # This job only runs when a release is published on GitHub
     if: github.event_name == 'release' && github.event.action == 'published'
     needs: [tests, lint]
 
