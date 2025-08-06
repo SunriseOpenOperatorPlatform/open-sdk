@@ -87,7 +87,7 @@ jobs:
 
     - name: Install build and upload dependencies
       run: |
-        pip install setuptools wheel twine
+        pip install build twine
 
     - name: Build the package
       run: python -m build
