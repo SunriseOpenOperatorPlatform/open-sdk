@@ -134,22 +134,29 @@ CONFIG = {
         "K8S_ONBOARDED_APP_NAME": "nginx",
         "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         "APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "ZONE_ID": "b2a1b33d-f382-47de-b555-2d32155eb74c",
-        # CAMARA deploy_app payload
+        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
         "APP_DEPLOY_PAYLOAD": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
             "appZones": [
                 {
                     "EdgeCloudZone": {
-                        "edgeCloudZoneId": "b2a1b33d-f382-47de-b555-2d32155eb74c",
-                        "edgeCloudZoneName": "k8s-zone-1",
+                        "edgeCloudZoneId": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
+                        "edgeCloudZoneName": "zorro-solutions",
                         "edgeCloudZoneStatus": "active",
-                        "edgeCloudProvider": "kubernetes",
-                        "edgeCloudRegion": "Local",
+                        "edgeCloudProvider": "ICOM",
+                        "edgeCloudRegion": "Europe-Southeast",
                     }
                 }
             ],
         },
+        # CAMARA deploy_app payload
+        # "APP_DEPLOY_PAYLOAD": {
+        #     "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        #     "name": "nginx-test",
+        #     "edgeCloudZoneId": "zorro-solutions",
+        #     "kubernetesClusterRef": "",
+        # },
+        
         # Legacy K8S_DEPLOY_PAYLOAD for backward compatibility (if needed)
         "K8S_DEPLOY_PAYLOAD": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -159,11 +166,27 @@ CONFIG = {
         },
         "APP_ONBOARD_MANIFEST": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "name": "nginx",
+            "name": "nginx_test",
             "version": "1",
             "packageType": "QCOW2",
-            "appProvider": "Nginx Inc.",
+            "appProvider": "jJsxUU403g5PUhoRtYfOBaaIRZGVzXDZgMBqzMYq5xLcdZoWGYIYqmVy0",
             "appRepo": {"imagePath": "nginx", "type": "PRIVATEREPO"},
+            "requiredResources": {
+                "infraKind": "kubernetes",
+                "applicationResources": {
+                    "cpuPool": {
+                        "numCPU": 2,
+                        "memory": 2048,
+                        "topology": {
+                            "minNumberOfNodes": 2,
+                            "minNodeCpu": 1,
+                            "minNodeMemory": 1024,
+                        },
+                    }
+                },
+                "isStandalone": False,
+                "version": "1.29",
+            },
             "componentSpec": [
                 {
                     "componentName": "nginx",

@@ -209,6 +209,5 @@ def deploy_service_function(
         connector_db.insert_document_deployed_service_function(
             document=deployed_service_function_db
         )
-        return response
-    else:
-        return "error instantiating application"
+    return response
+
