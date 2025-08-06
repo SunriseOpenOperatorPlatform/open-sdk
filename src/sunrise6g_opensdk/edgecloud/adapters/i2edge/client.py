@@ -1034,7 +1034,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         params = {}
         response = i2edge_get(url, params, expected_status=200)
         response_json = response.json()
-        app_component_specs = request_body.get("appComponents")
+        app_component_specs = request_body.get("appComponentSpecs")
         app_qos_profile = request_body.get("appUpdQoSProfile")
         response_json["profile_data"]["appQoSProfile"] = app_qos_profile
         response_json["profile_data"]["appComponentSpecs"] = app_component_specs
