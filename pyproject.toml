@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sunrise6g-opensdk"
-version = "1.0.7.dev0"
 description = "Open source SDK to abstract CAMARA/GSMA Transformation Functions (TFs) for Edge Cloud platforms, 5G network cores and Open RAN solutions."
 keywords = [
   "Federation",
@@ -50,6 +49,7 @@ dependencies = [
   "pymongo==4.13.2",
   "kubernetes==33.1.0",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://sunrise6g.eu/"
@@ -64,3 +64,6 @@ include = ["sunrise6g_opensdk*"]
 
 [tool.setuptools.package-data]
 sunrise6g_opensdk = ["py.typed"]
+
+[tool.setuptools_scm]
+write_to = "src/sunrise6g_opensdk/_version.py"
