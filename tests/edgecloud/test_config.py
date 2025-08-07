@@ -41,7 +41,7 @@ CONFIG = {
                     "componentName": "my-component",
                     "networkInterfaces": [
                         {
-                            "interfaceId": "eth0",
+                            "interfaceId": "c3e1e6d4-1a5c-4a3b-9e4a-5f3d7b6c8e01",
                             "protocol": "TCP",
                             "port": 8080,
                             "visibilityType": "VISIBILITY_EXTERNAL",
@@ -67,14 +67,12 @@ CONFIG = {
         },
     },
     "aeros": {
-        "ZONE_ID": "urn:ngsi-ld:Domain:NCSRD",
-        "ARTEFACT_ID": "aeros-app-2",
-        "ARTEFACT_NAME": "aeroschart",
-        "REPO_NAME": "github-aeros",
-        "REPO_TYPE": "PUBLICREPO",
-        "REPO_URL": "https://aeros.github.io/helm/",
+        # Basic identifiers
+        "ZONE_ID": "<UUID>",
+        "APP_ID": "<UUID>",
+        # CAMARA onboard_app payload
         "APP_ONBOARD_MANIFEST": {
-            "appId": "aeros-app-2",
+            "appId": "<UUID>",
             "name": "aeros-SDK-app",
             "version": "1.0.0",
             "appProvider": "aeros",
@@ -104,7 +102,7 @@ CONFIG = {
                     "componentName": "aeros-component",
                     "networkInterfaces": [
                         {
-                            "interfaceId": "eth0",
+                            "interfaceId": "<UUID>",
                             "protocol": "TCP",
                             "port": 9090,
                             "visibilityType": "VISIBILITY_INTERNAL",
@@ -113,14 +111,13 @@ CONFIG = {
                 }
             ],
         },
-        "APP_ID": "aeros-app-2",
         # CAMARA deploy_app payload
         "APP_DEPLOY_PAYLOAD": {
-            "appId": "aeros-app-2",
+            "appId": "<UUID>",
             "appZones": [
                 {
                     "EdgeCloudZone": {
-                        "edgeCloudZoneId": "urn:ngsi-ld:Domain:NCSRD",
+                        "edgeCloudZoneId": "<UUID>",
                         "edgeCloudZoneName": "aeros-zone-1",
                         "edgeCloudZoneStatus": "active",
                         "edgeCloudProvider": "NCSRD",
@@ -131,39 +128,34 @@ CONFIG = {
         },
     },
     "kubernetes": {
-        "K8S_ONBOARDED_APP_NAME": "nginx",
-        "K8S_APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        # Basic identifiers
+        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
         "APP_ID": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "ZONE_ID": "b2a1b33d-f382-47de-b555-2d32155eb74c",
-        # CAMARA deploy_app payload
-        "APP_DEPLOY_PAYLOAD": {
-            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "appZones": [
-                {
-                    "EdgeCloudZone": {
-                        "edgeCloudZoneId": "b2a1b33d-f382-47de-b555-2d32155eb74c",
-                        "edgeCloudZoneName": "k8s-zone-1",
-                        "edgeCloudZoneStatus": "active",
-                        "edgeCloudProvider": "kubernetes",
-                        "edgeCloudRegion": "Local",
-                    }
-                }
-            ],
-        },
-        # Legacy K8S_DEPLOY_PAYLOAD for backward compatibility (if needed)
-        "K8S_DEPLOY_PAYLOAD": {
-            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "name": "nginx-test",
-            "edgeCloudZoneId": "zorro-solutions",
-            "kubernetesClusterRef": "",
-        },
+        "ZONE_ID": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
+        # CAMARA onboard_app payload
         "APP_ONBOARD_MANIFEST": {
             "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "name": "nginx",
+            "name": "nginx_test",
             "version": "1",
             "packageType": "QCOW2",
-            "appProvider": "Nginx Inc.",
+            "appProvider": "jJsxUU403g5PUhoRtYfOBaaIRZGVzXDZgMBqzMYq5xLcdZoWGYIYqmVy0",
             "appRepo": {"imagePath": "nginx", "type": "PRIVATEREPO"},
+            "requiredResources": {
+                "infraKind": "kubernetes",
+                "applicationResources": {
+                    "cpuPool": {
+                        "numCPU": 2,
+                        "memory": 2048,
+                        "topology": {
+                            "minNumberOfNodes": 2,
+                            "minNodeCpu": 1,
+                            "minNodeMemory": 1024,
+                        },
+                    }
+                },
+                "isStandalone": False,
+                "version": "1.29",
+            },
             "componentSpec": [
                 {
                     "componentName": "nginx",
@@ -171,16 +163,31 @@ CONFIG = {
                         {
                             "protocol": "TCP",
                             "port": 80,
-                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "interfaceId": "8f4b02a9-73ba-4fde-9d93-3b1a6e7c5d9f",
                             "visibilityType": "VISIBILITY_EXTERNAL",
                         },
                         {
                             "protocol": "TCP",
                             "port": 443,
-                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "interfaceId": "e5c9a2b1-3d7f-4b8e-a6c4-1f9d8b7a6c0e",
                             "visibilityType": "VISIBILITY_EXTERNAL",
                         },
                     ],
+                }
+            ],
+        },
+        # CAMARA deploy_app payload
+        "APP_DEPLOY_PAYLOAD": {
+            "appId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "appZones": [
+                {
+                    "EdgeCloudZone": {
+                        "edgeCloudZoneId": "999b7746-d2e2-4bb4-96e6-f1e895adef0c",
+                        "edgeCloudZoneName": "zorro-solutions",
+                        "edgeCloudZoneStatus": "active",
+                        "edgeCloudProvider": "ICOM",
+                        "edgeCloudRegion": "Europe-Southeast",
+                    }
                 }
             ],
         },

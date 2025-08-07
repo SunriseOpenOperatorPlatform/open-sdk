@@ -754,7 +754,7 @@ class KubernetesConnector:
             if actual_name == app_col["name"]:
                 app_["service_function_catalogue_name"] = app_col["name"]
                 app_["appId"] = app_col["_id"]
-                app_["appProvider"] = app_col.get("appProvider")
+                app_["appProvider"] = app_col.get("app_provider")
                 break
 
         # find volumes!
@@ -776,13 +776,13 @@ class KubernetesConnector:
         # Set status and replicas
         if (status.available_replicas is not None) and (status.ready_replicas is not None):
             if status.available_replicas >= 1 and status.ready_replicas >= 1:
-                app_["status"] = "running"
+                app_["status"] = "ready"
                 app_["replicas"] = status.ready_replicas
             else:
-                app_["status"] = "not_running"
+                app_["status"] = "failed"
                 app_["replicas"] = 0
         else:
-            app_["status"] = "not_running"
+            app_["status"] = "failed"
             app_["replicas"] = 0
 
         # Find compute node
