@@ -41,7 +41,7 @@ CONFIG = {
                     "componentName": "my-component",
                     "networkInterfaces": [
                         {
-                            "interfaceId": "eth0",
+                            "interfaceId": "c3e1e6d4-1a5c-4a3b-9e4a-5f3d7b6c8e01",
                             "protocol": "TCP",
                             "port": 8080,
                             "visibilityType": "VISIBILITY_EXTERNAL",
@@ -72,7 +72,7 @@ CONFIG = {
         "APP_ID": "<UUID>",
         # CAMARA onboard_app payload
         "APP_ONBOARD_MANIFEST": {
-            "appId": "aeros-app-2",
+            "appId": "<UUID>",
             "name": "aeros-SDK-app",
             "version": "1.0.0",
             "appProvider": "aeros",
@@ -102,7 +102,7 @@ CONFIG = {
                     "componentName": "aeros-component",
                     "networkInterfaces": [
                         {
-                            "interfaceId": "eth0",
+                            "interfaceId": "<UUID>",
                             "protocol": "TCP",
                             "port": 9090,
                             "visibilityType": "VISIBILITY_INTERNAL",
@@ -113,11 +113,11 @@ CONFIG = {
         },
         # CAMARA deploy_app payload
         "APP_DEPLOY_PAYLOAD": {
-            "appId": "aeros-app-2",
+            "appId": "<UUID>",
             "appZones": [
                 {
                     "EdgeCloudZone": {
-                        "edgeCloudZoneId": "urn:ngsi-ld:Domain:NCSRD",
+                        "edgeCloudZoneId": "<UUID>,
                         "edgeCloudZoneName": "aeros-zone-1",
                         "edgeCloudZoneStatus": "active",
                         "edgeCloudProvider": "NCSRD",
@@ -163,13 +163,13 @@ CONFIG = {
                         {
                             "protocol": "TCP",
                             "port": 80,
-                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "interfaceId": "8f4b02a9-73ba-4fde-9d93-3b1a6e7c5d9f",
                             "visibilityType": "VISIBILITY_EXTERNAL",
                         },
                         {
                             "protocol": "TCP",
                             "port": 443,
-                            "interfaceId": "Uj6qThvzkegxa3L4b88",
+                            "interfaceId": "e5c9a2b1-3d7f-4b8e-a6c4-1f9d8b7a6c0e",
                             "visibilityType": "VISIBILITY_EXTERNAL",
                         },
                     ],
