@@ -1,3 +1,11 @@
+## 🚨 Repository Archived — Project has moved!
+
+This repository is no longer maintained and has been archived.
+
+➡️ **The active development now continues at:**  
+🔗 [https://labs.etsi.org/rep/oop/code/tf-sdk](https://labs.etsi.org/rep/oop/code/tf-sdk)
+
+
 <a href="https://github.com/SunriseOpenOperatorPlatform/open-sdk/actions/workflows/ci.yaml" title="CI Status">
   <img src="https://github.com/SunriseOpenOperatorPlatform/open-sdk/actions/workflows/ci.yaml/badge.svg">
 </a>
