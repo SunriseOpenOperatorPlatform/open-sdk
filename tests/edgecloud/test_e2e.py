@@ -242,7 +242,6 @@ def test_get_all_onboarded_apps(edgecloud_client):
         assert isinstance(apps_data, list)
 
         # CAMARA schema validation for each app manifest
-
         validated_apps = []
         for app_manifest_data in apps_data:
             validated_app = camara_schemas.AppManifest(**app_manifest_data)
