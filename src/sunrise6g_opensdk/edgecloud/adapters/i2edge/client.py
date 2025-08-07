@@ -748,7 +748,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
 
             return build_custom_http_response(
                 status_code=200,
-                content=[zone.model_dump_json() for zone in validated_data.root],
+                content=[zone.model_dump() for zone in validated_data.root],
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -776,7 +776,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema {e}")
             return build_custom_http_response(
                 status_code=200,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -806,7 +806,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema: {e}")
             return build_custom_http_response(
                 status_code=200,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -837,7 +837,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
             transformed = {
                 "artefact_id": artefact_id,
                 "artefact_name": artefact_name,
-                "repo_name": repo_data.get("repoName"),
+                "repo_name": repo_data.get("repoName", ""),
                 "repo_type": request_body.get("repoType"),
                 "repo_url": repo_data["repoURL"],
                 "user_name": repo_data.get("userName"),
@@ -895,7 +895,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                     raise ValueError(f"Invalid schema: {e}")
                 return build_custom_http_response(
                     status_code=200,
-                    content=validated_data.model_dump_json(),
+                    content=validated_data.model_dump(),
                     headers={"Content-Type": self.content_type_gsma},
                     encoding=self.encoding_gsma,
                     url=response.url,
@@ -1011,7 +1011,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema: {e}")
             return build_custom_http_response(
                 status_code=200,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -1034,7 +1034,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
         params = {}
         response = i2edge_get(url, params, expected_status=200)
         response_json = response.json()
-        app_component_specs = request_body.get("appComponents")
+        app_component_specs = request_body.get("appComponentSpecs")
         app_qos_profile = request_body.get("appUpdQoSProfile")
         response_json["profile_data"]["appQoSProfile"] = app_qos_profile
         response_json["profile_data"]["appComponentSpecs"] = app_component_specs
@@ -1114,7 +1114,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema: {e}")
             return build_custom_http_response(
                 status_code=202,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -1149,7 +1149,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema: {e}")
             return build_custom_http_response(
                 status_code=200,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,
@@ -1194,7 +1194,7 @@ class EdgeApplicationManager(EdgeCloudManagementInterface):
                 raise ValueError(f"Invalid schema: {e}")
             return build_custom_http_response(
                 status_code=200,
-                content=validated_data.model_dump_json(),
+                content=validated_data.model_dump(),
                 headers={"Content-Type": self.content_type_gsma},
                 encoding=self.encoding_gsma,
                 url=response.url,

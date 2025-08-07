@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field, HttpUrl, RootModel
+from pydantic import BaseModel, Field, RootModel
 
 # ---------------------------
 # FederationManagement
@@ -122,7 +122,7 @@ class ZoneRegisteredDataList(RootModel[List[ZoneRegisteredData]]):
 
 
 class ArtefactRepoLocation(BaseModel):
-    repoURL: HttpUrl
+    repoURL: str
     userName: Optional[str] = None
     password: Optional[str] = None
     token: Optional[str] = None
