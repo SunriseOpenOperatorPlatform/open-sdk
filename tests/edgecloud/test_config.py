@@ -117,7 +117,7 @@ CONFIG = {
             "appZones": [
                 {
                     "EdgeCloudZone": {
-                        "edgeCloudZoneId": "<UUID>,
+                        "edgeCloudZoneId": "<UUID>",
                         "edgeCloudZoneName": "aeros-zone-1",
                         "edgeCloudZoneStatus": "active",
                         "edgeCloudProvider": "NCSRD",
